@@ -48,7 +48,7 @@ export function totalPayouts(data: Transaction[]) {
   return sum(data.map((t) => t.payout))
 }
 
-/** Refunds actually received — logged as their own dated "refund" rows. */
+/** Refunds actually received - logged as their own dated "refund" rows. */
 export function totalRefundsReceived(data: Transaction[]) {
   return sum(
     data.filter((t) => t.feeType === "refund").map((t) => t.refundAmount)
@@ -260,7 +260,7 @@ export function transactionsFor(accountId: string, data: Transaction[]) {
   return data.filter((t) => t.accountId === accountId)
 }
 
-/** Phase the account is in right now — the phase on its latest logged row. */
+/** Phase the account is in right now - the phase on its latest logged row. */
 export function currentPhase(accountId: string, data: Transaction[]): Phase {
   const rows = transactionsFor(accountId, data)
   if (rows.length === 0) return "phase1"
@@ -325,7 +325,7 @@ const FEE_TYPE_PURPOSE: Partial<Record<FeeType, string>> = {
 export const yearOf = (isoDate: string) => isoDate.slice(0, 4)
 
 /**
- * One row on the Tax tab — either a deductible transaction auto-pulled from
+ * One row on the Tax tab - either a deductible transaction auto-pulled from
  * Accounts data or a standalone expense. Never re-entered, always derived.
  */
 export type DeductibleItem = {

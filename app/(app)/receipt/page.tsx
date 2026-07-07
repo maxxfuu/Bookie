@@ -110,7 +110,7 @@ export default function Page() {
   const location = taxLocationById(taxLocationId)
   const estTax = stackedTaxFor(location, netTaxable)
 
-  // One receipt row per firm — with 90+ accounts, per-account rows are noise.
+  // One receipt row per firm - with 90+ accounts, per-account rows are noise.
   const firmTotals = new Map<string, { count: number; net: number }>()
   for (const { account, netProfit: acctNet } of summaries) {
     const entry = firmTotals.get(account.firm) ?? { count: 0, net: 0 }
@@ -149,7 +149,7 @@ export default function Page() {
 
         <div className="mt-5 flex flex-col gap-1.5">
           <ReceiptRule />
-          <span className="text-center font-bold">— DASHBOARD —</span>
+          <span className="text-center font-bold">- DASHBOARD -</span>
           <ReceiptRule />
           <ReceiptLine label="Gross fees" value={formatCurrency(gross)} />
           <ReceiptLine label="Payouts" value={formatCurrency(payouts)} />
@@ -167,7 +167,7 @@ export default function Page() {
             value={
               funded > 0
                 ? formatCurrency(costPerFundedAccount(transactions))
-                : "—"
+                : "-"
             }
           />
         </div>
@@ -175,7 +175,7 @@ export default function Page() {
         <div className="mt-5 flex flex-col gap-1.5">
           <ReceiptRule />
           <span className="text-center font-bold">
-            — ACCOUNTS ({accounts.length}) —
+            - ACCOUNTS ({accounts.length}) -
           </span>
           <ReceiptRule />
           {firmRows.length === 0 ? (
@@ -200,7 +200,7 @@ export default function Page() {
         <div className="mt-5 flex flex-col gap-1.5">
           <ReceiptRule />
           <span className="text-center font-bold">
-            — TAX {year} ({location.state.toUpperCase()}) —
+            - TAX {year} ({location.state.toUpperCase()}) -
           </span>
           <ReceiptRule />
           <ReceiptLine

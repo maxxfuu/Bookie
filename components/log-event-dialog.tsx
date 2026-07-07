@@ -145,7 +145,7 @@ export function LogEventDialog({
     <Dialog open onOpenChange={(next) => !next && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Log event — {account.nickname}</DialogTitle>
+          <DialogTitle>Log event - {account.nickname}</DialogTitle>
           <DialogDescription>
             Each event becomes a transaction and recomputes every chart and KPI
             on the dashboard.

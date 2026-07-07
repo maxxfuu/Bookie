@@ -86,7 +86,7 @@ export function ChartFirmRadar() {
       <CardHeader>
         <CardTitle>Firm Comparison</CardTitle>
         <CardDescription>
-          Scored 0–100 per axis relative to the best firm — higher is better.
+          Scored 0–100 per axis relative to the best firm - higher is better.
           Only firms you hold accounts with are plotted.
         </CardDescription>
       </CardHeader>

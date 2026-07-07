@@ -274,7 +274,7 @@ export function AddAccountDialog() {
     toast.success(`Imported ${parts.join(", ")} from paste.`)
     if (existingPayoutMatches.orphaned.length > 0) {
       toast.error(
-        `No account matches payout ID${existingPayoutMatches.orphaned.length === 1 ? "" : "s"} ${existingPayoutMatches.orphaned.join(", ")} — those payouts were skipped.`
+        `No account matches payout ID${existingPayoutMatches.orphaned.length === 1 ? "" : "s"} ${existingPayoutMatches.orphaned.join(", ")} - those payouts were skipped.`
       )
     }
     resetAndClose()
@@ -311,7 +311,7 @@ export function AddAccountDialog() {
       return
     }
     const account = addAccount(result.data)
-    toast.success(`Added ${account.nickname} — eval fee logged.`)
+    toast.success(`Added ${account.nickname} - eval fee logged.`)
     resetAndClose()
   }
 
@@ -356,7 +356,7 @@ export function AddAccountDialog() {
         <DialogHeader>
           <DialogTitle>Add account</DialogTitle>
           <DialogDescription>
-            Pick a firm and plan — pricing and rules autofill from the firm’s
+            Pick a firm and plan - pricing and rules autofill from the firm’s
             published terms. Creating the account logs its eval fee as the first
             transaction.
           </DialogDescription>
@@ -382,7 +382,7 @@ export function AddAccountDialog() {
                   onChange={(e) => setPasteText(e.target.value)}
                 />
                 <FieldDescription>
-                  Copy the order table — and optionally the payout table —
+                  Copy the order table - and optionally the payout table -
                   straight from your firm&apos;s dashboard, in the same paste.
                   Products are matched against the plan catalog,
                   &quot;Reset&quot; rows attach as reset events, and payout
@@ -415,7 +415,7 @@ export function AddAccountDialog() {
                   )}
                   {existingPayoutMatches.orphaned.map((accountId) => (
                     <span key={accountId} className="text-destructive">
-                      No account matches payout ID {accountId} — those payouts
+                      No account matches payout ID {accountId} - those payouts
                       will be skipped.
                     </span>
                   ))}
@@ -653,7 +653,7 @@ export function AddAccountDialog() {
                           }
                         />
                         <FieldDescription>
-                          Optional — the identifier the firm assigned.
+                          Optional - the identifier the firm assigned.
                         </FieldDescription>
                       </Field>
                     </div>
@@ -684,7 +684,7 @@ export function AddAccountDialog() {
                           )}
                         </ToggleGroup>
                         <FieldDescription>
-                          Set from the plan — override only for promo variants.
+                          Set from the plan - override only for promo variants.
                         </FieldDescription>
                       </Field>
                       <Field>
@@ -824,7 +824,7 @@ export function AddAccountDialog() {
                           }
                         />
                         <FieldDescription>
-                          Accrues automatically — each elapsed month becomes a
+                          Accrues automatically - each elapsed month becomes a
                           transaction.
                         </FieldDescription>
                       </Field>
@@ -930,8 +930,8 @@ export function AddAccountDialog() {
                   <FieldLegend>Rules</FieldLegend>
                   <FieldDescription>
                     {selectedPlan
-                      ? `Autofilled from ${selectedPlan.programName} — override only if a promo changed terms.`
-                      : `Defaults for ${form.firm} — override if your terms differ.`}{" "}
+                      ? `Autofilled from ${selectedPlan.programName} - override only if a promo changed terms.`
+                      : `Defaults for ${form.firm} - override if your terms differ.`}{" "}
                     These feed the firm radar.
                   </FieldDescription>
                   <FieldGroup>

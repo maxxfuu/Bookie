@@ -105,7 +105,7 @@ export function SectionCards() {
         <CardHeader>
           <CardDescription>Cost per Funded Account</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {funded > 0 ? formatCurrency(costPerFunded) : "—"}
+            {funded > 0 ? formatCurrency(costPerFunded) : "-"}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">{funded} funded</Badge>

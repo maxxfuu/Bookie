@@ -51,7 +51,7 @@ const data = {
       icon: <NotebookPenIcon />,
     },
   ],
-  // Hidden for now — Settings/Get Help/Search (icons: CircleHelpIcon, SearchIcon):
+  // Hidden for now - Settings/Get Help/Search (icons: CircleHelpIcon, SearchIcon):
   // navSecondary: [
   //   { title: "Get Help", url: "#", icon: <CircleHelpIcon /> },
   //   { title: "Search", url: "#", icon: <SearchIcon /> },
@@ -82,7 +82,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavDocuments items={data.documents} />
-        {/* Settings (with theme toggle) only — Get Help/Search stay hidden. */}
+        {/* Settings (with theme toggle) only - Get Help/Search stay hidden. */}
         <NavSecondary items={[]} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

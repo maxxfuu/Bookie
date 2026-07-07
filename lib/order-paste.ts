@@ -18,7 +18,7 @@ import type { AccountInput } from "@/lib/types"
  * price, rules, and firm); rows whose product contains "Reset" become reset
  * events on the best-matching account. Payout rows are grouped by their
  * firm account ID and attached to the account with an exact externalId
- * match, else the oldest unassigned account purchased before the payout —
+ * match, else the oldest unassigned account purchased before the payout -
  * the account then adopts that ID so later pastes correlate exactly.
  */
 
@@ -43,7 +43,7 @@ export type OrderPasteResult = {
   resetCount: number
   /** Payouts attached to a drafted account in this paste. */
   payoutCount: number
-  /** Payout groups whose account ID matches none of the drafts — the
+  /** Payout groups whose account ID matches none of the drafts - the
    *  importer should try existing accounts' externalId. */
   unmatchedPayouts: UnmatchedPayoutGroup[]
   /** Human-readable notes for lines that could not be imported. */
@@ -68,7 +68,7 @@ const PAYOUT_SKIP_STATUSES = new Set([
   "canceled",
 ])
 
-/** Firm account IDs look like LFF05079150180003 — letters + digits, no '#'. */
+/** Firm account IDs look like LFF05079150180003 - letters + digits, no '#'. */
 const ACCOUNT_ID_RE = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9][A-Za-z0-9_-]{5,}$/
 
 const normalize = (s: string) =>
@@ -86,7 +86,7 @@ function toISO(dateText: string): string | null {
 
 type ParsedPayoutRow = {
   accountId: string
-  date: string // ISO — approval date when present, else request date
+  date: string // ISO - approval date when present, else request date
   amount: number
 }
 
@@ -108,7 +108,7 @@ function parsePayoutLine(
   }
   const [accountId, ...rest] = fields
   if (!ACCOUNT_ID_RE.test(accountId)) return null
-  // Request date, then optionally an approval date — pay on the latest one.
+  // Request date, then optionally an approval date - pay on the latest one.
   const dates = rest.map(toISO).filter((d): d is string => d !== null)
   const amountField = rest.find((f) => f.includes("$"))
   if (dates.length === 0 || !amountField) return null
@@ -159,7 +159,7 @@ function matchPlan(product: string): FirmPlan | undefined {
   return best
 }
 
-/** Whatever remains of the product after the plan name — platform variant etc. */
+/** Whatever remains of the product after the plan name - platform variant etc. */
 function platformKey(product: string, plan: FirmPlan): string {
   return ` ${normalize(product)} `
     .replace(` ${normalize(plan.programName)} `, " ")
@@ -258,7 +258,7 @@ export function parseOrderPaste(text: string): OrderPasteResult {
   }
 
   // Correlate payout rows: group by firm account ID, then attach each group
-  // to a draft — exact externalId match wins, else the oldest unassigned
+  // to a draft - exact externalId match wins, else the oldest unassigned
   // account purchased before the group's first payout. The draft adopts the
   // firm account ID as its externalId so future pastes match exactly.
   const payoutGroups = new Map<string, ParsedPayoutRow[]>()

@@ -22,7 +22,7 @@ export const TREATMENT_INFO: Record<FilingTreatment, TreatmentInfo> = {
     label: "Business (Schedule C)",
     description:
       "You trade funded accounts regularly and continuously with profit intent. Expenses net against income; self-employment tax applies.",
-    rule: "Prop payouts are contractor compensation, typically reported on Form 1099-NEC. When the activity passes the IRS profit-motive test (businesslike records, regularity, time and effort), it belongs on Schedule C: ordinary and necessary expenses — eval fees, resets, data — are deductible, and net earnings owe self-employment tax of 15.3% on 92.35% of net income (Social Security portion capped at the $184,500 2026 wage base).",
+    rule: "Prop payouts are contractor compensation, typically reported on Form 1099-NEC. When the activity passes the IRS profit-motive test (businesslike records, regularity, time and effort), it belongs on Schedule C: ordinary and necessary expenses - eval fees, resets, data - are deductible, and net earnings owe self-employment tax of 15.3% on 92.35% of net income (Social Security portion capped at the $184,500 2026 wage base).",
     sources: [
       "https://www.irs.gov/newsroom/heres-how-to-tell-the-difference-between-a-hobby-and-a-business-for-tax-purposes",
       "https://www.irs.gov/taxtopics/tc554",
@@ -36,8 +36,8 @@ export const TREATMENT_INFO: Record<FilingTreatment, TreatmentInfo> = {
   hobby: {
     label: "Hobby",
     description:
-      "Casual or sporadic — no profit-motive posture. Income is still taxable, but expenses are not deductible.",
-    rule: "Hobby income remains fully taxable (Schedule 1, other income) with no self-employment tax, but hobby expenses are miscellaneous itemized deductions that the TCJA suspended for 2018–2025 — and the 2025 OBBBA made that elimination permanent, so they stay nondeductible for 2026 and beyond.",
+      "Casual or sporadic - no profit-motive posture. Income is still taxable, but expenses are not deductible.",
+    rule: "Hobby income remains fully taxable (Schedule 1, other income) with no self-employment tax, but hobby expenses are miscellaneous itemized deductions that the TCJA suspended for 2018–2025 - and the 2025 OBBBA made that elimination permanent, so they stay nondeductible for 2026 and beyond.",
     sources: [
       "https://www.irs.gov/newsroom/tips-for-taxpayers-who-make-money-from-a-hobby",
       "https://www.irs.gov/publications/p529",
@@ -49,8 +49,8 @@ export const TREATMENT_INFO: Record<FilingTreatment, TreatmentInfo> = {
   trader_tax_status: {
     label: "Trader Tax Status",
     description:
-      "You claim TTS for your own-account trading. Prop payouts are a different regime — simple expense-netting is not applied here.",
-    rule: "TTS (IRS Topic 429) requires seeking profit from short-term price moves, substantial volume, and continuity/regularity; it unlocks Schedule C expense deductions and the optional §475(f) mark-to-market election (ordinary instead of capital treatment, no wash sales). Own-account TTS trading gains are NOT subject to self-employment tax. Prop-firm payouts, however, generally do not fit this regime — you trade the firm's capital as a contractor and receive compensation for services (1099-NEC), not capital gains, so TTS/§475 applies only to your personal account alongside it.",
+      "You claim TTS for your own-account trading. Prop payouts are a different regime - simple expense-netting is not applied here.",
+    rule: "TTS (IRS Topic 429) requires seeking profit from short-term price moves, substantial volume, and continuity/regularity; it unlocks Schedule C expense deductions and the optional §475(f) mark-to-market election (ordinary instead of capital treatment, no wash sales). Own-account TTS trading gains are NOT subject to self-employment tax. Prop-firm payouts, however, generally do not fit this regime - you trade the firm's capital as a contractor and receive compensation for services (1099-NEC), not capital gains, so TTS/§475 applies only to your personal account alongside it.",
     sources: [
       "https://www.irs.gov/taxtopics/tc429",
       "https://greentradertax.com/trader-tax-center/proprietary-trading/",
@@ -58,7 +58,7 @@ export const TREATMENT_INFO: Record<FilingTreatment, TreatmentInfo> = {
     ],
     confidence: "high",
     uncertainNote:
-      "The IRS has not ruled on evaluation/funded-account payouts specifically; mark-to-market vs capital vs ordinary treatment of your combined activity is fact-dependent — have a CPA structure this.",
+      "The IRS has not ruled on evaluation/funded-account payouts specifically; mark-to-market vs capital vs ordinary treatment of your combined activity is fact-dependent - have a CPA structure this.",
   },
   unsure: {
     label: "Unsure",
@@ -68,7 +68,7 @@ export const TREATMENT_INFO: Record<FilingTreatment, TreatmentInfo> = {
     sources: [],
     confidence: "high",
     uncertainNote:
-      "Classification of prop income is unsettled and fact-dependent — confirm with a CPA.",
+      "Classification of prop income is unsettled and fact-dependent - confirm with a CPA.",
   },
 }
 
@@ -93,7 +93,7 @@ export function deductionModeFor(treatment: FilingTreatment): DeductionMode {
   }
 }
 
-// Self-employment tax — verified against IRS Topic 554, the Schedule SE
+// Self-employment tax - verified against IRS Topic 554, the Schedule SE
 // instructions, and SSA's 2026 COLA fact sheet ($184,500 wage base).
 export const SE_NET_EARNINGS_FACTOR = 0.9235
 export const SE_SS_RATE = 0.124

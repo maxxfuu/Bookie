@@ -54,7 +54,7 @@ export function ChartAreaInteractive() {
   const [prevIsMobile, setPrevIsMobile] = React.useState(isMobile)
 
   // Adjust the default range when crossing the mobile breakpoint (render-time
-  // state adjustment instead of an effect — see react.dev/learn/you-might-not-need-an-effect).
+  // state adjustment instead of an effect - see react.dev/learn/you-might-not-need-an-effect).
   if (isMobile !== prevIsMobile) {
     setPrevIsMobile(isMobile)
     if (isMobile) {

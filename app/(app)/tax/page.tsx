@@ -79,14 +79,14 @@ function csvEscape(value: string | number) {
   return /[",\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s
 }
 
-/** Category-grouped CSV with totals + receipt checklist — the CPA handoff. */
+/** Category-grouped CSV with totals + receipt checklist - the CPA handoff. */
 function buildTaxCsv(
   items: DeductibleItem[],
   year: string,
   treatment: FilingTreatment
 ): string {
   const lines: string[] = [
-    `Bookie deductible expenses — tax year ${year}`,
+    `Bookie deductible expenses - tax year ${year}`,
     `Filing treatment: ${TREATMENT_INFO[treatment].label}${
       deductionsApply(treatment)
         ? ""
@@ -122,7 +122,7 @@ function buildTaxCsv(
   const total = items.reduce((sum, i) => sum + i.deductibleValue, 0)
   lines.push(`TOTAL,,,,,${total.toFixed(2)},,,`)
   const missing = items.filter(isMissingReceipt)
-  lines.push("", "Receipt checklist — still missing:")
+  lines.push("", "Receipt checklist - still missing:")
   if (missing.length === 0) {
     lines.push("(none)")
   } else {
@@ -159,7 +159,7 @@ export default function Page() {
     [transactions, expenses, currentYear]
   )
 
-  // Year-scoped, unfiltered — drives the bracket math.
+  // Year-scoped, unfiltered - drives the bracket math.
   const yearItems = React.useMemo(
     () => deductibleItems(transactions, expenses, year),
     [transactions, expenses, year]
@@ -189,7 +189,7 @@ export default function Page() {
     netTaxableIncome
   ).marginalRate
 
-  // Filter bar applies on top of the year scope — table + KPIs + breakdown.
+  // Filter bar applies on top of the year scope - table + KPIs + breakdown.
   const filteredItems = React.useMemo(
     () =>
       yearItems.filter((item) => {
@@ -318,7 +318,7 @@ export default function Page() {
         Prop-trading income classification (business / hobby / trader status)
         is unsettled and fact-dependent. This tool organizes records and
         estimates figures; it is not tax advice. Your treatment determines
-        what&apos;s deductible — confirm with a CPA before filing.
+        what&apos;s deductible - confirm with a CPA before filing.
       </p>
       <div className="grid grid-cols-1 gap-4 @4xl/main:grid-cols-2">
         <TaxBracketCard
@@ -340,7 +340,7 @@ export default function Page() {
       </div>
       {mode === "pending" && (
         <p className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-xs font-medium text-amber-600 dark:text-amber-400">
-          Pending classification — deduction figures below are estimates only
+          Pending classification - deduction figures below are estimates only
           and are excluded from the bracket math until you pick a filing
           treatment.
         </p>
@@ -536,7 +536,7 @@ export default function Page() {
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
             {missingReceipts.length > 0
-              ? `${formatCurrency(missingTotal)} of expenses lack substantiation — attach receipts before filing.`
+              ? `${formatCurrency(missingTotal)} of expenses lack substantiation - attach receipts before filing.`
               : "Every manual expense has a receipt attached."}
           </CardContent>
         </Card>

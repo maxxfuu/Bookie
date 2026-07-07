@@ -58,7 +58,7 @@ function initialForm(): FormState {
   }
 }
 
-/** Categories that are usually mixed-use or capped — prompt a lower default. */
+/** Categories that are usually mixed-use or capped - prompt a lower default. */
 const PCT_SUGGESTIONS: Partial<Record<TaxCategory, string>> = {
   business_meals: "50",
   home_office: "30",
@@ -91,7 +91,7 @@ export function AddExpenseDialog() {
     if (!file) return
     if (file.size > MAX_RECEIPT_BYTES) {
       toast.error(
-        `Receipt is too large — keep it under ${Math.round(MAX_RECEIPT_BYTES / 1024)}KB.`
+        `Receipt is too large - keep it under ${Math.round(MAX_RECEIPT_BYTES / 1024)}KB.`
       )
       return
     }
@@ -143,7 +143,7 @@ export function AddExpenseDialog() {
         <DialogHeader>
           <DialogTitle>Add expense</DialogTitle>
           <DialogDescription>
-            Account fees are pulled in automatically — don&apos;t re-enter
+            Account fees are pulled in automatically - don&apos;t re-enter
             them.
           </DialogDescription>
         </DialogHeader>
@@ -295,7 +295,7 @@ export function AddExpenseDialog() {
                     <UploadIcon className="size-5 text-muted-foreground" />
                   )}
                   <span className="text-sm text-muted-foreground">
-                    Drag & drop or click — image/PDF, max{" "}
+                    Drag & drop or click - image/PDF, max{" "}
                     {Math.round(MAX_RECEIPT_BYTES / 1024)}KB
                   </span>
                 </div>

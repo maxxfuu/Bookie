@@ -63,7 +63,7 @@ export function ChartRecoveryRadial() {
       <CardHeader>
         <CardTitle>Recovery Progress</CardTitle>
         <CardDescription>
-          Payouts as a share of gross spend — a full ring is breakeven
+          Payouts as a share of gross spend - a full ring is breakeven
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1">

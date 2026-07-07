@@ -120,7 +120,7 @@ export type Account = {
   externalId: string
   accountSize: number
   programType: ProgramType
-  startDate: string // ISO — anchors all time series
+  startDate: string // ISO - anchors all time series
   currency: string
   listPrice: number
   discountCode: string
@@ -139,19 +139,19 @@ export type AccountInput = Omit<Account, "id">
 
 /**
  * Standalone business expense not tied to any account (hardware, data feeds,
- * courses, meals, home office). Account fees are NOT re-entered here — the
+ * courses, meals, home office). Account fees are NOT re-entered here - the
  * Tax tab unions these with deductible transactions.
  */
 export type Expense = {
   id: string
-  date: string // ISO — determines which tax year it falls in
+  date: string // ISO - determines which tax year it falls in
   vendor: string
   amount: number // full amount paid
   taxCategory: TaxCategory
   /** 0–100; mixed-use items (internet, phone, home office) aren't 100%. */
   deductiblePct: number
   receiptUrl: string | null
-  /** One-line "why this is a business expense" — audit substantiation. */
+  /** One-line "why this is a business expense" - audit substantiation. */
   businessPurpose: string
 }
 

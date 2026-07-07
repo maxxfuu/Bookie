@@ -85,7 +85,7 @@ export function ChartTaxSensitivity({
       ? `This change pushes you into the ${formatPct(
           FEDERAL_LAYER.brackets[adjustedIdx].rate,
           0
-        )} federal bracket — only the dollars above ${formatCurrency(
+        )} federal bracket - only the dollars above ${formatCurrency(
           FEDERAL_LAYER.brackets[adjustedIdx - 1].upTo ?? 0
         )} are taxed at it.`
       : adjustedIdx < currentIdx
@@ -93,7 +93,7 @@ export function ChartTaxSensitivity({
             FEDERAL_LAYER.brackets[adjustedIdx].rate,
             0
           )} federal bracket.`
-        : "No bracket boundary crossed — only your marginal slice changes."
+        : "No bracket boundary crossed - only your marginal slice changes."
 
   return (
     <Card className="@container/card flex flex-col">

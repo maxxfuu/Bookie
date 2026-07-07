@@ -179,15 +179,15 @@ html::-webkit-scrollbar {
   }
 }
 
-/* Marketing entrance — landing hero, staggered via animation-delay. */
+/* Marketing entrance - landing hero, staggered via animation-delay. */
 .fade-up {
   animation: motion-fade-up 600ms var(--ease-out-quart) both;
 }
-/* Product entrance — fast, opacity-only (seen on every visit). */
+/* Product entrance - fast, opacity-only (seen on every visit). */
 .content-enter {
   animation: motion-fade 250ms ease-out both;
 }
-/* Micro-feedback — icon swaps, confirmations. */
+/* Micro-feedback - icon swaps, confirmations. */
 .pop-in {
   animation: motion-pop 150ms var(--ease-out-quart) both;
 }

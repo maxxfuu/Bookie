@@ -123,7 +123,7 @@ function SortableHeader({
 
 function RefundBadge({ row }: { row: TransactionRow }) {
   if (!row.refundable) {
-    return <span className="text-muted-foreground">—</span>
+    return <span className="text-muted-foreground">-</span>
   }
   return (
     <Badge
@@ -229,7 +229,7 @@ const columns: ColumnDef<TransactionRow>[] = [
         {row.original.amountPaid > 0 ? (
           formatCurrency(row.original.amountPaid)
         ) : (
-          <span className="text-muted-foreground">—</span>
+          <span className="text-muted-foreground">-</span>
         )}
       </div>
     ),
@@ -253,7 +253,7 @@ const columns: ColumnDef<TransactionRow>[] = [
         {row.original.payout > 0 ? (
           formatCurrency(row.original.payout)
         ) : (
-          <span className="font-normal text-muted-foreground">—</span>
+          <span className="font-normal text-muted-foreground">-</span>
         )}
       </div>
     ),

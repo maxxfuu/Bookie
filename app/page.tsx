@@ -3,15 +3,21 @@ import Link from "next/link"
 
 import { FadeIn } from "@/components/fade-in"
 import { InstallCommand } from "@/components/install-command"
+import { SiteFooter } from "@/components/site-footer"
 import { TerminalDemo } from "@/components/terminal-demo"
 import { ThemeToggle } from "@/components/theme-toggle"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { CircuitBoard } from "@/components/ui/circuit-board"
 import {
   ArrowUpRightIcon,
   Database,
   Globe,
-  GlobeIcon,
   Server,
   Shield,
 } from "lucide-react"
@@ -29,34 +35,58 @@ function GitHubIcon({ className }: { className?: string }) {
   )
 }
 
-function LinkedInIcon({ className }: { className?: string }) {
+function Code({ children }: { children: React.ReactNode }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
-      <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.55C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.72C24 .77 23.2 0 22.22 0z" />
-    </svg>
+    <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs text-foreground">
+      {children}
+    </code>
   )
 }
 
-const SOCIALS = [
+const SETUP_STEPS = [
+  <>
+    Clone the repo and install deps with <Code>bun install</Code>
+  </>,
+  <>
+    Ensure SQLite is available (<Code>brew install sqlite</Code> if needed -
+    bundled with better-sqlite3, so usually already there)
+  </>,
+  <>
+    Run <Code>bun run db:migrate</Code> to create the local database file
+  </>,
+  <>
+    Start it with <Code>bun run dev</Code> (or <Code>bun start</Code>), open
+    localhost
+  </>,
+  <>Add an account, then import your firm&apos;s transaction data</>,
+  <>Use Bookie to track your spend, resets, and payouts</>,
+]
+
+const FAQ = [
   {
-    label: "GitHub",
-    href: "https://github.com/maxxfuu",
-    icon: <GitHubIcon className="size-4" />,
+    question: "Where does my data live?",
+    answer:
+      "On your machine, full stop. Bookie runs locally against a local SQLite database file - there's no cloud account, no sync, and nothing leaves your computer. Back it up by copying one file.",
   },
   {
-    label: "LinkedIn",
-    href: "https://www.linkedin.com/in/maxxfuu",
-    icon: <LinkedInIcon className="size-4" />,
+    question: "Is Bookie free?",
+    answer:
+      "Yes - fully free and open source. Clone the repo, run it locally, and modify it however you like. If it saves you money on your next eval, star the repo.",
   },
   {
-    label: "maxxfuu.com",
-    href: "https://maxxfuu.com",
-    icon: <GlobeIcon className="size-4" />,
+    question: "Which prop firms are supported?",
+    answer:
+      "Any firm works with manual entry or CSV/JSON import. Firms in the built-in catalog additionally get plan autofill - pricing, drawdown rules, and refund terms - plus paste-import of order and payout history straight from the firm's dashboard.",
+  },
+  {
+    question: "How do I get my order history in?",
+    answer:
+      "Copy the order table from your firm's dashboard and paste it into Add account → Paste orders. Purchases become accounts, reset rows attach as reset events, and pasted payout rows attach to the matching account automatically.",
+  },
+  {
+    question: "Does Bookie file my taxes?",
+    answer:
+      "No - it estimates. The Tax tab tracks deductible expenses by category and applies your state's brackets to give you a planning number, then exports a CSV your CPA can work from. Always confirm with a professional.",
   },
 ]
 
@@ -69,7 +99,7 @@ const lineup = [
   {
     title: "Accounts",
     description:
-      "Every challenge you buy, with its real cost — list price, discounts, refund terms, resets, and payouts.",
+      "Every challenge you buy, with its real cost - list price, discounts, refund terms, resets, and payouts.",
   },
   {
     title: "Tax",
@@ -79,7 +109,7 @@ const lineup = [
   {
     title: "Notes",
     description:
-      "Trading notes and journal entries that live right next to your numbers — context for every decision.",
+      "Trading notes and journal entries that live right next to your numbers - context for every decision.",
   },
 ]
 
@@ -92,6 +122,12 @@ export default function Page() {
             bookie.
           </Link>
           <nav className="flex items-center gap-2">
+            <Link
+              href="/docs"
+              className="px-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Docs
+            </Link>
             <a
               href="https://github.com/maxxfuu"
               target="_blank"
@@ -116,7 +152,7 @@ export default function Page() {
               className="fade-up max-w-xl text-sm leading-relaxed text-muted-foreground"
               style={{ animationDelay: "75ms" }}
             >
-              Every eval fee, reset, refund, and payout in one ledger — cost per
+              Every eval fee, reset, refund, and payout in one ledger - cost per
               funded account, recovery ratio, and the exact moment you break
               even.{" "}
               <span className="font-medium text-foreground">Local-first.</span>{" "}
@@ -187,7 +223,7 @@ export default function Page() {
               ))}
             </FadeIn>
             <h2 className="fade-up text-3xl font-semibold tracking-tight text-balance sm:text-4xl mt-16 mb-8 mx-auto" style={{ animationDelay: "300ms" }}>
-              Local, Secure, and Open Source
+              Local, Secure, Open Source
             </h2>
             <FadeIn
               delay={0.2}
@@ -239,37 +275,35 @@ export default function Page() {
                   height={300}
                   pulseColor="var(--beam)"
                 />
+                <ol className="mt-6 max-w-[500px] list-decimal space-y-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
+                  {SETUP_STEPS.map((step, i) => (
+                    <li key={i}>{step}</li>
+                  ))}
+                </ol>
               </div>
             </FadeIn>
           </section>
+          <section className="flex flex-col gap-4 pb-20">
+            <FadeIn>
+              <h2 className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+                Frequently asked questions
+              </h2>
+            </FadeIn>
+            <FadeIn delay={0.1}>
+              <Accordion className="w-full">
+                {FAQ.map((item) => (
+                  <AccordionItem key={item.question} value={item.question}>
+                    <AccordionTrigger>{item.question}</AccordionTrigger>
+                    <AccordionContent>
+                      <p className="text-muted-foreground">{item.answer}</p>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </FadeIn>
+          </section>
         </main>
-        <footer className="flex flex-wrap items-center justify-between gap-4 border-t py-6 text-sm text-muted-foreground">
-          <span>
-            bookie. — built by{" "}
-            <a
-              href="https://maxxfuu.com"
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium text-foreground hover:underline"
-            >
-              maxxfuu
-            </a>
-          </span>
-          <nav className="flex items-center gap-4">
-            {SOCIALS.map((social) => (
-              <a
-                key={social.label}
-                href={social.href}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1.5 transition-colors hover:text-foreground"
-              >
-                {social.icon}
-                {social.label}
-              </a>
-            ))}
-          </nav>
-        </footer>
+        <SiteFooter />
       </div>
     </div>
   )

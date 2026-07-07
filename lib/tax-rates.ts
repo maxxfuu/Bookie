@@ -3,7 +3,7 @@
  *
  * Everything here is an ESTIMATE seeded from officially published 2026
  * figures (single filer). Brackets are inflation-adjusted every year and
- * deductions/filing status are not modeled — every layer carries
+ * deductions/filing status are not modeled - every layer carries
  * `verifyBeforeFiling: true` and the UI must render a "verify before filing"
  * note wherever these numbers appear.
  */
@@ -128,7 +128,7 @@ export const TAX_LOCATIONS: TaxLocation[] = [
     label: "Nevada",
     state: "Nevada",
     layers: [],
-    note: "Nevada has no state income tax — federal only.",
+    note: "Nevada has no state income tax - federal only.",
   },
   {
     id: "new-york",
@@ -152,7 +152,7 @@ export const TAX_LOCATIONS: TaxLocation[] = [
     state: "Washington",
     city: "Seattle",
     layers: [],
-    note: "Washington has no state income tax — federal only.",
+    note: "Washington has no state income tax - federal only.",
   },
   {
     id: "miami",
@@ -160,7 +160,7 @@ export const TAX_LOCATIONS: TaxLocation[] = [
     state: "Florida",
     city: "Miami",
     layers: [],
-    note: "Florida has no state income tax — federal only.",
+    note: "Florida has no state income tax - federal only.",
   },
 ]
 

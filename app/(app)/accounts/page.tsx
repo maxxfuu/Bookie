@@ -215,7 +215,7 @@ export default function Page() {
                     {payouts > 0 ? (
                       formatCurrency(payouts)
                     ) : (
-                      <span className="text-muted-foreground">—</span>
+                      <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>
                   <TableCell
