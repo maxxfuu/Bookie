@@ -50,6 +50,24 @@ export const TAX_CATEGORIES = [
 
 export type TaxCategory = (typeof TAX_CATEGORIES)[number]
 
+/**
+ * How the user files their prop income for a given tax year. Classification
+ * is unsettled and fact-dependent, so "unsure" is the honest default.
+ */
+export const FILING_TREATMENTS = [
+  "business_schedule_c",
+  "hobby",
+  "trader_tax_status",
+  "unsure",
+] as const
+
+export type FilingTreatment = (typeof FILING_TREATMENTS)[number]
+
+/** Per-tax-year settings; treatment can change year to year. */
+export type TaxYearSettings = {
+  treatment: FilingTreatment
+}
+
 export type Transaction = {
   id: string
   date: string // ISO

@@ -32,6 +32,9 @@ export function TaxBracketCard({
   netTaxableIncome,
   payouts,
   totalDeductible,
+  deductionsApplied,
+  treatmentLabel,
+  seTax,
   locationId,
   onLocationChange,
   year,
@@ -39,6 +42,11 @@ export function TaxBracketCard({
   netTaxableIncome: number
   payouts: number
   totalDeductible: number
+  /** False when the filing treatment disallows netting deductions. */
+  deductionsApplied: boolean
+  treatmentLabel: string
+  /** Estimated self-employment tax, or null when not applicable. */
+  seTax: number | null
   locationId: string
   onLocationChange: (id: string) => void
   year: string
@@ -46,6 +54,7 @@ export function TaxBracketCard({
   const location = taxLocationById(locationId)
   const stacked = stackedTaxFor(location, netTaxableIncome)
   const federal = stacked.layers[0]
+  const totalTax = stacked.total + (seTax ?? 0)
 
   return (
     <Card className="@container/card">
@@ -104,8 +113,14 @@ export function TaxBracketCard({
             <span>{formatCurrency(payouts)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Total deductible</span>
-            <span>−{formatCurrency(totalDeductible)}</span>
+            <span className="text-muted-foreground">
+              {deductionsApplied
+                ? "Total deductible"
+                : `Deductions not applied (${treatmentLabel})`}
+            </span>
+            <span className={deductionsApplied ? "" : "line-through opacity-60"}>
+              −{formatCurrency(totalDeductible)}
+            </span>
           </div>
           <div className="flex justify-between font-medium">
             <span>Net taxable trading income</span>
@@ -118,9 +133,17 @@ export function TaxBracketCard({
               <span>{formatCurrency(layer.tax)}</span>
             </div>
           ))}
+          {seTax !== null && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">
+                Self-employment tax
+              </span>
+              <span>{formatCurrency(seTax)}</span>
+            </div>
+          )}
           <div className="flex justify-between font-medium">
             <span>Total estimated tax</span>
-            <span>{formatCurrency(stacked.total)}</span>
+            <span>{formatCurrency(totalTax)}</span>
           </div>
         </div>
       </CardContent>

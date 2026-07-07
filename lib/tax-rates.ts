@@ -113,20 +113,22 @@ const IL_STATE: TaxLayer = {
   brackets: [{ upTo: null, rate: 0.0495 }],
 }
 
+// California first: it's the project-wide default (see lib/store.tsx) and
+// the fallback when an unknown location id is looked up.
 export const TAX_LOCATIONS: TaxLocation[] = [
-  {
-    id: "nevada",
-    label: "Nevada",
-    state: "Nevada",
-    layers: [],
-    note: "Nevada has no state income tax — federal only.",
-  },
   {
     id: "california",
     label: "California",
     state: "California",
     layers: [CA_STATE],
     note: "Progressive state income tax up to ~13.3%. No city layer.",
+  },
+  {
+    id: "nevada",
+    label: "Nevada",
+    state: "Nevada",
+    layers: [],
+    note: "Nevada has no state income tax — federal only.",
   },
   {
     id: "new-york",

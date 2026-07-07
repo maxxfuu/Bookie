@@ -46,10 +46,21 @@ import {
   type DeductibleItem,
 } from "@/lib/selectors"
 import { formatPct, stackedTaxFor, taxLocationById } from "@/lib/tax-rates"
+import {
+  deductionModeFor,
+  deductionsApply,
+  estimateSeTax,
+  TREATMENT_INFO,
+} from "@/lib/tax-treatments"
 import { useAccounts } from "@/lib/store"
-import { TAX_CATEGORIES, type TaxCategory } from "@/lib/types"
+import {
+  FILING_TREATMENTS,
+  TAX_CATEGORIES,
+  type FilingTreatment,
+  type TaxCategory,
+} from "@/lib/types"
 import { cn } from "@/lib/utils"
-import { DownloadIcon } from "lucide-react"
+import { DownloadIcon, ExternalLinkIcon } from "lucide-react"
 
 type ReceiptFilter = "all" | "has" | "missing"
 
@@ -69,9 +80,18 @@ function csvEscape(value: string | number) {
 }
 
 /** Category-grouped CSV with totals + receipt checklist — the CPA handoff. */
-function buildTaxCsv(items: DeductibleItem[], year: string): string {
+function buildTaxCsv(
+  items: DeductibleItem[],
+  year: string,
+  treatment: FilingTreatment
+): string {
   const lines: string[] = [
     `Bookie deductible expenses — tax year ${year}`,
+    `Filing treatment: ${TREATMENT_INFO[treatment].label}${
+      deductionsApply(treatment)
+        ? ""
+        : " (deductions NOT applied under this treatment)"
+    }`,
     "",
     "Category,Date,Vendor,Amount,Deductible %,Deductible $,Receipt,Source,Business purpose",
   ]
@@ -116,11 +136,19 @@ function buildTaxCsv(items: DeductibleItem[], year: string): string {
 }
 
 export default function Page() {
-  const { hydrated, transactions, expenses, removeExpense } = useAccounts()
+  const {
+    hydrated,
+    transactions,
+    expenses,
+    taxSettings,
+    taxLocationId,
+    removeExpense,
+    setFilingTreatment,
+    setTaxLocation,
+  } = useAccounts()
 
   const currentYear = String(new Date().getFullYear())
   const [year, setYear] = React.useState(currentYear)
-  const [locationId, setLocationId] = React.useState("nevada")
   const [categories, setCategories] = React.useState<TaxCategory[]>([])
   const [receiptFilter, setReceiptFilter] = React.useState<ReceiptFilter>("all")
   const [fromDate, setFromDate] = React.useState("")
@@ -144,9 +172,20 @@ export default function Page() {
     () => payoutsInYear(transactions, year),
     [transactions, year]
   )
-  const netTaxableIncome = Math.max(payouts - totalDeductibleYear, 0)
+
+  // The treatment gates every deduction figure. Default: unsure.
+  const treatment: FilingTreatment = taxSettings[year]?.treatment ?? "unsure"
+  const treatmentInfo = TREATMENT_INFO[treatment]
+  const mode = deductionModeFor(treatment)
+  const applied = deductionsApply(treatment)
+
+  const netTaxableIncome = Math.max(
+    payouts - (applied ? totalDeductibleYear : 0),
+    0
+  )
+  const seTax = applied ? estimateSeTax(netTaxableIncome) : null
   const marginalRate = stackedTaxFor(
-    taxLocationById(locationId),
+    taxLocationById(taxLocationId),
     netTaxableIncome
   ).marginalRate
 
@@ -183,7 +222,7 @@ export default function Page() {
   const breakdown = deductibleByCategory(filteredItems)
 
   function exportCsv() {
-    const blob = new Blob([buildTaxCsv(filteredItems, year)], {
+    const blob = new Blob([buildTaxCsv(filteredItems, year, treatment)], {
       type: "text/csv;charset=utf-8",
     })
     const url = URL.createObjectURL(blob)
@@ -214,7 +253,7 @@ export default function Page() {
           <h2 className="text-base font-medium">Tax</h2>
           <p className="text-sm text-muted-foreground">Deductible expenses</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Label htmlFor="tax-year" className="sr-only">
             Tax year
           </Label>
@@ -238,6 +277,32 @@ export default function Page() {
               </SelectGroup>
             </SelectContent>
           </Select>
+          <Label htmlFor="tax-treatment" className="sr-only">
+            Filing treatment
+          </Label>
+          <Select
+            value={treatment}
+            onValueChange={(value) => {
+              if (value) setFilingTreatment(year, value as FilingTreatment)
+            }}
+            items={FILING_TREATMENTS.map((t) => ({
+              label: TREATMENT_INFO[t].label,
+              value: t,
+            }))}
+          >
+            <SelectTrigger id="tax-treatment" size="sm" className="w-48">
+              <SelectValue placeholder="Filing treatment" />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectGroup>
+                {FILING_TREATMENTS.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {TREATMENT_INFO[t].label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
           <Button variant="outline" size="sm" onClick={exportCsv}>
             <DownloadIcon data-icon="inline-start" />
             Export CSV
@@ -245,21 +310,110 @@ export default function Page() {
           <AddExpenseDialog />
         </div>
       </div>
+      <p className="text-sm text-muted-foreground">
+        {treatmentInfo.description}
+        {treatmentInfo.uncertainNote && ` ${treatmentInfo.uncertainNote}`}
+      </p>
+      <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
+        Prop-trading income classification (business / hobby / trader status)
+        is unsettled and fact-dependent. This tool organizes records and
+        estimates figures; it is not tax advice. Your treatment determines
+        what&apos;s deductible — confirm with a CPA before filing.
+      </p>
       <div className="grid grid-cols-1 gap-4 @4xl/main:grid-cols-2">
         <TaxBracketCard
           netTaxableIncome={netTaxableIncome}
           payouts={payouts}
           totalDeductible={totalDeductibleYear}
-          locationId={locationId}
-          onLocationChange={setLocationId}
+          deductionsApplied={applied}
+          treatmentLabel={treatmentInfo.label}
+          seTax={seTax}
+          locationId={taxLocationId}
+          onLocationChange={setTaxLocation}
           year={year}
         />
         <ChartTaxSensitivity
           netTaxableIncome={netTaxableIncome}
-          locationId={locationId}
+          locationId={taxLocationId}
+          deductionsAllowed={applied}
         />
       </div>
-      <div className="flex flex-wrap items-end gap-4">
+      {mode === "pending" && (
+        <p className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-xs font-medium text-amber-600 dark:text-amber-400">
+          Pending classification — deduction figures below are estimates only
+          and are excluded from the bracket math until you pick a filing
+          treatment.
+        </p>
+      )}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-end gap-4">
+          <div className="flex flex-col gap-2">
+            <Label
+              htmlFor="tax-receipts"
+              className="text-xs text-muted-foreground"
+            >
+              Receipts
+            </Label>
+            <Select
+              value={receiptFilter}
+              onValueChange={(value) => {
+                if (value) setReceiptFilter(value as ReceiptFilter)
+              }}
+              items={[
+                { label: "All", value: "all" },
+                { label: "Has receipt", value: "has" },
+                { label: "Missing", value: "missing" },
+              ]}
+            >
+              <SelectTrigger id="tax-receipts" size="sm" className="w-32">
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="has">Has receipt</SelectItem>
+                  <SelectItem value="missing">Missing</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-end gap-2">
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="tax-from"
+                className="text-xs text-muted-foreground"
+              >
+                From
+              </Label>
+              <Input
+                id="tax-from"
+                type="date"
+                className="h-7 w-36"
+                min={`${year}-01-01`}
+                max={`${year}-12-31`}
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="tax-to"
+                className="text-xs text-muted-foreground"
+              >
+                To
+              </Label>
+              <Input
+                id="tax-to"
+                type="date"
+                className="h-7 w-36"
+                min={`${year}-01-01`}
+                max={`${year}-12-31`}
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
         <div className="flex flex-col gap-2">
           <Label className="text-xs text-muted-foreground">Categories</Label>
           <ToggleGroup
@@ -276,91 +430,94 @@ export default function Page() {
             ))}
           </ToggleGroup>
         </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="tax-receipts" className="text-xs text-muted-foreground">
-            Receipts
-          </Label>
-          <Select
-            value={receiptFilter}
-            onValueChange={(value) => {
-              if (value) setReceiptFilter(value as ReceiptFilter)
-            }}
-            items={[
-              { label: "All", value: "all" },
-              { label: "Has receipt", value: "has" },
-              { label: "Missing", value: "missing" },
-            ]}
-          >
-            <SelectTrigger id="tax-receipts" size="sm" className="w-32">
-              <SelectValue placeholder="All" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="has">Has receipt</SelectItem>
-                <SelectItem value="missing">Missing</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-end gap-2">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="tax-from" className="text-xs text-muted-foreground">
-              From
-            </Label>
-            <Input
-              id="tax-from"
-              type="date"
-              className="h-7 w-36"
-              min={`${year}-01-01`}
-              max={`${year}-12-31`}
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="tax-to" className="text-xs text-muted-foreground">
-              To
-            </Label>
-            <Input
-              id="tax-to"
-              type="date"
-              className="h-7 w-36"
-              min={`${year}-01-01`}
-              max={`${year}-12-31`}
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-            />
-          </div>
-        </div>
       </div>
       <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-3">
-        <Card className="@container/card">
-          <CardHeader>
-            <CardDescription>Total Deductible · {year}</CardDescription>
-            <CardTitle className="text-2xl font-semibold tabular-nums">
-              {formatCurrency(filteredTotal)}
-            </CardTitle>
-            <CardAction>
-              <Badge variant="outline">{filteredItems.length} items</Badge>
-            </CardAction>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            {formatCurrency(fromAccountsTotal)} auto from accounts ·{" "}
-            {formatCurrency(filteredTotal - fromAccountsTotal)} standalone
-          </CardContent>
-        </Card>
-        <Card className="@container/card">
-          <CardHeader>
-            <CardDescription>Estimated Tax Saved</CardDescription>
-            <CardTitle className="text-2xl font-semibold tabular-nums">
-              {formatCurrency(filteredTotal * marginalRate)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Deductible × {formatPct(marginalRate)} marginal rate
-          </CardContent>
-        </Card>
+        {mode === "info" ? (
+          <Card className="@container/card @xl/main:col-span-2">
+            <CardHeader>
+              <CardTitle>Trader Tax Status</CardTitle>
+              <CardDescription>
+                Simple expense-netting is not applied under this treatment
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 text-sm text-muted-foreground">
+              <p>{treatmentInfo.rule}</p>
+              <p>{treatmentInfo.uncertainNote}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-fit"
+                render={
+                  <a
+                    href={treatmentInfo.sources[0]}
+                    target="_blank"
+                    rel="noreferrer"
+                  />
+                }
+              >
+                IRS Topic 429
+                <ExternalLinkIcon data-icon="inline-end" />
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <Card className="@container/card">
+              <CardHeader>
+                <CardDescription>Total Deductible · {year}</CardDescription>
+                <CardTitle
+                  className={cn(
+                    "text-2xl font-semibold tabular-nums",
+                    mode === "disallowed" && "line-through opacity-60",
+                    mode === "pending" && "text-muted-foreground italic"
+                  )}
+                >
+                  {formatCurrency(filteredTotal)}
+                </CardTitle>
+                <CardAction>
+                  <Badge variant="outline">
+                    {mode === "disallowed"
+                      ? "Not deductible (hobby)"
+                      : mode === "pending"
+                        ? "Pending classification"
+                        : `${filteredItems.length} items`}
+                  </Badge>
+                </CardAction>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                {formatCurrency(fromAccountsTotal)} auto from accounts ·{" "}
+                {formatCurrency(filteredTotal - fromAccountsTotal)} standalone
+              </CardContent>
+            </Card>
+            <Card className="@container/card">
+              <CardHeader>
+                <CardDescription>Estimated Tax Saved</CardDescription>
+                <CardTitle
+                  className={cn(
+                    "text-2xl font-semibold tabular-nums",
+                    mode === "pending" && "text-muted-foreground italic"
+                  )}
+                >
+                  {mode === "disallowed"
+                    ? formatCurrency(0)
+                    : formatCurrency(filteredTotal * marginalRate)}
+                </CardTitle>
+                {mode === "pending" && (
+                  <CardAction>
+                    <Badge variant="outline">Pending classification</Badge>
+                  </CardAction>
+                )}
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                {mode === "disallowed"
+                  ? "Hobby expenses are nondeductible (TCJA, made permanent by OBBBA)."
+                  : mode === "pending"
+                    ? `If classified as business: deductible × ${formatPct(marginalRate)} marginal rate`
+                    : `Deductible × ${formatPct(marginalRate)} marginal rate`}
+              </CardContent>
+            </Card>
+          </>
+        )}
         <Card className="@container/card">
           <CardHeader>
             <CardDescription>Receipts</CardDescription>
@@ -384,9 +541,22 @@ export default function Page() {
           </CardContent>
         </Card>
       </div>
-      <Card className="@container/card">
+      <Card
+        className={cn(
+          "@container/card",
+          mode === "disallowed" && "opacity-70"
+        )}
+      >
         <CardHeader>
-          <CardTitle>Category Breakdown</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Category Breakdown
+            {mode === "disallowed" && (
+              <Badge variant="outline">Not deductible (hobby)</Badge>
+            )}
+            {mode === "pending" && (
+              <Badge variant="outline">Pending classification</Badge>
+            )}
+          </CardTitle>
           <CardDescription>
             Deductible dollars grouped the way a Schedule C wants them
           </CardDescription>
@@ -436,6 +606,7 @@ export default function Page() {
       </Card>
       <TaxExpenseTable
         items={filteredItems}
+        deductionMode={mode}
         onRemove={(id) => {
           removeExpense(id)
           toast.success("Expense removed.")

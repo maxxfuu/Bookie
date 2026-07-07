@@ -27,6 +27,8 @@ import {
   TAX_CATEGORY_LABELS,
   type DeductibleItem,
 } from "@/lib/selectors"
+import type { DeductionMode } from "@/lib/tax-treatments"
+import { cn } from "@/lib/utils"
 import {
   ArrowUpDownIcon,
   CheckIcon,
@@ -58,8 +60,17 @@ function SortableHeader({
   )
 }
 
+/** Visual treatment of the deductible column per filing bucket. */
+const DEDUCTIBLE_CELL_CLASS: Record<DeductionMode, string> = {
+  active: "",
+  disallowed: "line-through opacity-60",
+  pending: "text-muted-foreground italic",
+  info: "text-muted-foreground",
+}
+
 function buildColumns(
-  onRemove: (id: string) => void
+  onRemove: (id: string) => void,
+  deductionMode: DeductionMode
 ): ColumnDef<DeductibleItem>[] {
   return [
     {
@@ -128,7 +139,12 @@ function buildColumns(
         </div>
       ),
       cell: ({ row }) => (
-        <div className="text-right font-medium tabular-nums">
+        <div
+          className={cn(
+            "text-right font-medium tabular-nums",
+            DEDUCTIBLE_CELL_CLASS[deductionMode]
+          )}
+        >
           {formatCurrency(row.original.deductibleValue)}
         </div>
       ),
@@ -198,9 +214,11 @@ function buildColumns(
 export function TaxExpenseTable({
   items,
   onRemove,
+  deductionMode,
 }: {
   items: DeductibleItem[]
   onRemove: (id: string) => void
+  deductionMode: DeductionMode
 }) {
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: "date", desc: true },
@@ -209,7 +227,10 @@ export function TaxExpenseTable({
     pageIndex: 0,
     pageSize: 10,
   })
-  const columns = React.useMemo(() => buildColumns(onRemove), [onRemove])
+  const columns = React.useMemo(
+    () => buildColumns(onRemove, deductionMode),
+    [onRemove, deductionMode]
+  )
   const table = useReactTable({
     data: items,
     columns,

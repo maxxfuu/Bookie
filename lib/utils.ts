@@ -14,3 +14,8 @@ export function signedClass(value: number) {
   if (value < 0) return negativeClass
   return undefined
 }
+
+/** Local calendar date as YYYY-MM-DD. Local-first app — never UTC-shift "today". */
+export function localISODate(date: Date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+}

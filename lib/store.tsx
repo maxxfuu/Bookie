@@ -3,12 +3,15 @@
 import * as React from "react"
 
 import { currentPhase } from "@/lib/selectors"
+import { localISODate } from "@/lib/utils"
 import type {
   Account,
   AccountInput,
   Expense,
   ExpenseInput,
+  FilingTreatment,
   Note,
+  TaxYearSettings,
   FeeType,
   LogEventInput,
   TaxCategory,
@@ -19,11 +22,17 @@ import type {
 // v2: firm list changed to the 9 supported futures firms.
 const STORAGE_KEY = "bookie.store.v2"
 
+const DEFAULT_TAX_LOCATION = "california"
+
 type StoreState = {
   accounts: Account[]
   transactions: Transaction[]
   expenses: Expense[]
   notes: Note[]
+  /** Keyed by tax year ("2026"); missing years default to "unsure". */
+  taxSettings: Record<string, TaxYearSettings>
+  /** Selected tax location id (lib/tax-rates.ts); shared project-wide. */
+  taxLocationId: string
 }
 
 type Snapshot = StoreState & {
@@ -36,6 +45,8 @@ const EMPTY_SNAPSHOT: Snapshot = {
   transactions: [],
   expenses: [],
   notes: [],
+  taxSettings: {},
+  taxLocationId: DEFAULT_TAX_LOCATION,
   hydrated: false,
 }
 
@@ -177,6 +188,14 @@ function loadPersistedState(): StoreState {
       ),
       expenses: Array.isArray(parsed.expenses) ? parsed.expenses : [],
       notes: Array.isArray(parsed.notes) ? parsed.notes : [],
+      taxSettings:
+        parsed.taxSettings && typeof parsed.taxSettings === "object"
+          ? parsed.taxSettings
+          : {},
+      taxLocationId:
+        typeof parsed.taxLocationId === "string"
+          ? parsed.taxLocationId
+          : DEFAULT_TAX_LOCATION,
     }
   } catch {
     return EMPTY_SNAPSHOT
@@ -276,6 +295,8 @@ function applyEvent(
     transactions: [...transactions, row],
     expenses: state.expenses,
     notes: state.notes,
+    taxSettings: state.taxSettings,
+    taxLocationId: state.taxLocationId,
   }
 }
 
@@ -301,6 +322,8 @@ class AccountsStore {
           transactions: this.snapshot.transactions,
           expenses: this.snapshot.expenses,
           notes: this.snapshot.notes,
+          taxSettings: this.snapshot.taxSettings,
+          taxLocationId: this.snapshot.taxLocationId,
         })
       )
     } catch {
@@ -319,7 +342,7 @@ class AccountsStore {
     if (this.loaded || typeof window === "undefined") return
     this.loaded = true
     const state = loadPersistedState()
-    const accrued = accrueRecurring(state, toISODate(new Date()))
+    const accrued = accrueRecurring(state, localISODate())
     this.snapshot = {
       accounts: state.accounts,
       transactions:
@@ -328,6 +351,8 @@ class AccountsStore {
           : state.transactions,
       expenses: state.expenses,
       notes: state.notes,
+      taxSettings: state.taxSettings,
+      taxLocationId: state.taxLocationId,
       hydrated: true,
     }
     this.persist()
@@ -353,7 +378,7 @@ class AccountsStore {
         accounts: [...prev.accounts, account],
         transactions: [...prev.transactions, ...initialTransactions(account)],
       }
-      const accrued = accrueRecurring(withAccount, toISODate(new Date()))
+      const accrued = accrueRecurring(withAccount, localISODate())
       return accrued.length > 0
         ? {
             ...withAccount,
@@ -408,6 +433,17 @@ class AccountsStore {
       notes: prev.notes.filter((n) => n.id !== noteId),
     }))
   }
+
+  setFilingTreatment = (year: string, treatment: FilingTreatment) => {
+    this.setState((prev) => ({
+      ...prev,
+      taxSettings: { ...prev.taxSettings, [year]: { treatment } },
+    }))
+  }
+
+  setTaxLocation = (taxLocationId: string) => {
+    this.setState((prev) => ({ ...prev, taxLocationId }))
+  }
 }
 
 const store = new AccountsStore()
@@ -427,5 +463,7 @@ export function useAccounts() {
     removeExpense: store.removeExpense,
     addNote: store.addNote,
     removeNote: store.removeNote,
+    setFilingTreatment: store.setFilingTreatment,
+    setTaxLocation: store.setTaxLocation,
   }
 }

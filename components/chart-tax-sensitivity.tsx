@@ -42,16 +42,20 @@ const compactCurrency = (value: number) =>
 export function ChartTaxSensitivity({
   netTaxableIncome,
   locationId,
+  deductionsAllowed,
 }: {
   netTaxableIncome: number
   locationId: string
+  /** When the filing treatment disallows deductions, write-offs can't move the marker. */
+  deductionsAllowed: boolean
 }) {
   const [addPayouts, setAddPayouts] = React.useState(0)
   const [addWriteoffs, setAddWriteoffs] = React.useState(0)
 
   const location = taxLocationById(locationId)
   const income = Math.max(netTaxableIncome, 0)
-  const adjusted = Math.max(income + addPayouts - addWriteoffs, 0)
+  const effectiveWriteoffs = deductionsAllowed ? addWriteoffs : 0
+  const adjusted = Math.max(income + addPayouts - effectiveWriteoffs, 0)
 
   const currentStack = stackedTaxFor(location, income)
   const adjustedStack = stackedTaxFor(location, adjusted)
@@ -189,17 +193,20 @@ export function ChartTaxSensitivity({
           </Field>
           <Field>
             <FieldLabel htmlFor="sens-writeoffs">
-              Additional write-offs: +{formatCurrency(addWriteoffs)}
+              {deductionsAllowed
+                ? `Additional write-offs: +${formatCurrency(addWriteoffs)}`
+                : "Write-offs don't apply to this treatment"}
             </FieldLabel>
             <Slider
               id="sens-writeoffs"
-              value={[addWriteoffs]}
+              value={[deductionsAllowed ? addWriteoffs : 0]}
               onValueChange={(value) =>
                 setAddWriteoffs(Array.isArray(value) ? (value[0] ?? 0) : value)
               }
               min={0}
               max={50000}
               step={250}
+              disabled={!deductionsAllowed}
             />
           </Field>
         </div>

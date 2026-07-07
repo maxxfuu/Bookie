@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useAccounts } from "@/lib/store"
+import { localISODate } from "@/lib/utils"
 import type { Account, BreachReason, LogEventInput, Phase } from "@/lib/types"
 
 type EventKind = LogEventInput["type"]
@@ -56,7 +57,7 @@ const BREACH_OPTIONS: { label: string; value: BreachReason }[] = [
 ]
 
 function todayISO() {
-  return new Date().toISOString().slice(0, 10)
+  return localISODate()
 }
 
 export function LogEventDialog({

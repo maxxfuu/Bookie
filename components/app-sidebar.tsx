@@ -20,11 +20,7 @@ import {
   ListIcon,
   ReceiptIcon,
   NotebookPenIcon,
-  CircleHelpIcon,
-  SearchIcon,
-  DatabaseIcon,
-  FileChartColumnIcon,
-  FileIcon,
+  ScrollTextIcon,
 } from "lucide-react"
 
 const data = {
@@ -55,33 +51,16 @@ const data = {
       icon: <NotebookPenIcon />,
     },
   ],
-  navSecondary: [
-    {
-      title: "Get Help",
-      url: "#",
-      icon: <CircleHelpIcon />,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: <SearchIcon />,
-    },
-  ],
+  // Hidden for now — Settings/Get Help/Search (icons: CircleHelpIcon, SearchIcon):
+  // navSecondary: [
+  //   { title: "Get Help", url: "#", icon: <CircleHelpIcon /> },
+  //   { title: "Search", url: "#", icon: <SearchIcon /> },
+  // ],
   documents: [
     {
-      name: "Fee Schedules",
-      url: "#",
-      icon: <DatabaseIcon />,
-    },
-    {
-      name: "Payout Reports",
-      url: "#",
-      icon: <FileChartColumnIcon />,
-    },
-    {
-      name: "Firm Rules",
-      url: "#",
-      icon: <FileIcon />,
+      name: "Receipt",
+      url: "/receipt",
+      icon: <ScrollTextIcon />,
     },
   ],
 }
@@ -103,7 +82,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {/* Settings (with theme toggle) only — Get Help/Search stay hidden. */}
+        <NavSecondary items={[]} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

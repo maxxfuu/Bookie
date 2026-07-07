@@ -45,6 +45,7 @@ import {
 import { FIRMS, getDefaultRules } from "@/lib/firms"
 import { formatCurrency } from "@/lib/selectors"
 import { useAccounts } from "@/lib/store"
+import { localISODate } from "@/lib/utils"
 import type { AccountRules, Firm, ProgramType } from "@/lib/types"
 import { FileUpIcon, PlusIcon, UploadIcon, XIcon } from "lucide-react"
 
@@ -85,7 +86,7 @@ type FormState = {
 }
 
 function todayISO() {
-  return new Date().toISOString().slice(0, 10)
+  return localISODate()
 }
 
 /** The plan-derived fields: what "downstream autofill" writes into the form. */

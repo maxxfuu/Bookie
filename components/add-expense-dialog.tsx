@@ -26,11 +26,12 @@ import {
 import { MAX_RECEIPT_BYTES, parseExpenseInput } from "@/lib/expense-schema"
 import { TAX_CATEGORY_LABELS } from "@/lib/selectors"
 import { useAccounts } from "@/lib/store"
+import { localISODate } from "@/lib/utils"
 import { TAX_CATEGORIES, type TaxCategory } from "@/lib/types"
 import { FileUpIcon, PlusIcon, UploadIcon, XIcon } from "lucide-react"
 
 function todayISO() {
-  return new Date().toISOString().slice(0, 10)
+  return localISODate()
 }
 
 type FormState = {

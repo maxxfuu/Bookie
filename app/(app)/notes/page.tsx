@@ -17,10 +17,11 @@ import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { useAccounts } from "@/lib/store"
+import { localISODate } from "@/lib/utils"
 import { NotebookPenIcon, Trash2Icon } from "lucide-react"
 
 function todayISO() {
-  return new Date().toISOString().slice(0, 10)
+  return localISODate()
 }
 
 function formatDate(isoDate: string) {

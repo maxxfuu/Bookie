@@ -10,6 +10,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/accounts": "Accounts",
   "/tax": "Tax",
   "/notes": "Notes",
+  "/receipt": "Receipt",
 }
 
 export function SiteHeader() {
