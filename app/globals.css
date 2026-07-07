@@ -144,3 +144,10 @@
     animation: none;
     mix-blend-mode: normal;
 }
+/* Hide the window scrollbar while keeping scrolling functional. */
+html {
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar {
+  display: none;
+}

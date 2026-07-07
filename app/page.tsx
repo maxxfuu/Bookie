@@ -1,6 +1,7 @@
+import Image from "next/image"
 import Link from "next/link"
 
-import { ImagePlaceholder } from "@/components/image-placeholder"
+import { InstallCommand } from "@/components/install-command"
 import { TerminalDemo } from "@/components/terminal-demo"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
@@ -21,26 +22,26 @@ function GitHubIcon({ className }: { className?: string }) {
 
 const lineup = [
   {
-    title: "Accounts",
-    description:
-      "Every challenge you buy, with its real cost — list price, discount code, refund terms, recurring fees.",
-  },
-  {
-    title: "Events",
-    description:
-      "Resets, phase changes, payouts, and refunds logged per account. Each one moves the numbers.",
-  },
-  {
     title: "Dashboard",
     description:
       "Spend vs payouts over time, cost per funded account, recovery ratio, and which firm is the better deal.",
+  },
+  {
+    title: "Accounts",
+    description:
+      "Every challenge you buy, with its real cost — list price, discounts, refund terms, resets, and payouts.",
+  },
+  {
+    title: "Tax",
+    description:
+      "Deductible expenses by category, bracket estimates for your state, and a CSV ready for your CPA.",
   },
 ]
 
 export default function Page() {
   return (
     <div className="flex min-h-svh flex-col">
-      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-6 py-5">
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-10 px-6 py-8 sm:px-8">
         <header className="flex items-center justify-between">
           <Link href="/" className="text-sm font-bold">
             bookie.
@@ -58,12 +59,12 @@ export default function Page() {
             <ThemeToggle />
           </nav>
         </header>
-        <main className="flex flex-1 flex-col gap-8 pt-6">
-          <div className="flex flex-col gap-5">
-            <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-              Prop-firm costs that are{" "}
+        <main className="flex flex-1 flex-col gap-12 pt-10 sm:pt-14">
+          <div className="flex flex-col gap-6">
+            <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
+              Track your cost between{" "}
               <span className="text-muted-foreground">
-                refreshingly boring.
+                each trading firms.
               </span>
             </h1>
             <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
@@ -73,7 +74,7 @@ export default function Page() {
               <span className="font-medium text-foreground">Local-first.</span>{" "}
               Your data never leaves the browser.
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 pt-2">
               <Button size="sm" render={<Link href="/dashboard" />}>
                 View Demo
                 <ArrowUpRightIcon data-icon="inline-end" />
@@ -89,27 +90,48 @@ export default function Page() {
                   />
                 }
               >
+                <GitHubIcon className="size-3.5" data-icon="inline-start" />
                 Fork on Github
               </Button>
             </div>
           </div>
-          <ImagePlaceholder />
-          <section className="flex flex-col gap-4 pb-10">
+          <div className="my-10 overflow-hidden rounded-xl border shadow-sm lg:-mx-14 xl:-mx-24 2xl:-mx-32 [mask-image:linear-gradient(to_bottom,black_55%,transparent_100%)]">
+            <Image
+              src="/dashboard-light.png"
+              alt="Bookie dashboard"
+              width={2000}
+              height={1204}
+              priority
+              className="w-full dark:hidden"
+            />
+            <Image
+              src="/dashboard-dark.png"
+              alt="Bookie dashboard"
+              width={2000}
+              height={1199}
+              priority
+              className="hidden w-full dark:block"
+            />
+          </div>
+          <section className="flex flex-col gap-5 pt-4 pb-20">
             <h2 className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
               The lineup
             </h2>
-            <div className="grid overflow-hidden rounded-lg border max-sm:divide-y sm:grid-cols-3 sm:divide-x">
-              {lineup.map((item) => (
-                <div key={item.title} className="flex flex-col gap-2 p-4">
-                  <h3 className="text-sm font-semibold">{item.title}</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {item.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <div className="py-8">
-              <TerminalDemo />
+            <div className="grid items-center gap-8 md:grid-cols-2">
+              <div className="flex flex-col divide-y overflow-hidden rounded-lg border">
+                {lineup.map((item) => (
+                  <div key={item.title} className="flex flex-col gap-2 p-5">
+                    <h3 className="text-sm font-semibold">{item.title}</h3>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      {item.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="mx-auto flex w-full max-w-lg flex-col gap-3">
+                <InstallCommand />
+                <TerminalDemo />
+              </div>
             </div>
           </section>
         </main>

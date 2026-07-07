@@ -211,7 +211,7 @@ export default function Page() {
             }}
           />
           <span className="tracking-widest text-muted-foreground">
-            *** MADE BY MAX FU ***
+            *** MADE BY BOOKIE ***
           </span>
         </div>
       </div>
