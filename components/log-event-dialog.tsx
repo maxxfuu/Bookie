@@ -42,9 +42,10 @@ const EVENT_LABELS: Record<EventKind, string> = {
   addon: "Add-on",
 }
 
+// "phase1"/"phase2" remain in the data model for saved accounts, but the UI
+// presents a single evaluation stage ("phase1" internally).
 const PHASE_OPTIONS: { label: string; value: Phase }[] = [
-  { label: "Phase 1", value: "phase1" },
-  { label: "Phase 2", value: "phase2" },
+  { label: "Evaluation", value: "phase1" },
   { label: "Funded", value: "funded" },
   { label: "Breached", value: "breached" },
 ]

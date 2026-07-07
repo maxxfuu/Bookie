@@ -145,7 +145,7 @@ const RULE_FIELDS: { key: keyof AccountRules; label: string }[] = [
 ]
 
 export function AddAccountDialog() {
-  const { addAccount, logEvent } = useAccounts()
+  const { accounts, addAccount, logEvent } = useAccounts()
   const [open, setOpen] = React.useState(false)
   const [form, setForm] = React.useState<FormState>(initialForm)
   const [planId, setPlanId] = React.useState<string>(initialPlanId)
@@ -157,6 +157,22 @@ export function AddAccountDialog() {
     () => (pasteText.trim() === "" ? null : parseOrderPaste(pasteText)),
     [pasteText]
   )
+
+  /** Payout groups the parser couldn't pin to a drafted account, resolved
+   *  against accounts that already exist in the store (by externalId). */
+  const existingPayoutMatches = React.useMemo(() => {
+    if (!pasteResult) return { matched: [], orphaned: [] as string[] }
+    const matched: { accountId: string; payouts: { date: string; amount: number }[] }[] = []
+    const orphaned: string[] = []
+    for (const group of pasteResult.unmatchedPayouts) {
+      if (accounts.some((a) => a.externalId === group.accountId)) {
+        matched.push(group)
+      } else {
+        orphaned.push(group.accountId)
+      }
+    }
+    return { matched, orphaned }
+  }, [pasteResult, accounts])
 
   const patch = (fields: Partial<FormState>) =>
     setForm((prev) => ({ ...prev, ...fields }))
@@ -209,8 +225,15 @@ export function AddAccountDialog() {
   }
 
   function handlePasteImport() {
-    if (!pasteResult || pasteResult.drafts.length === 0) return
+    if (!pasteResult) return
+    if (
+      pasteResult.drafts.length === 0 &&
+      existingPayoutMatches.matched.length === 0
+    ) {
+      return
+    }
     let resets = 0
+    let payouts = 0
     for (const draft of pasteResult.drafts) {
       const account = addAccount(draft.input)
       for (const reset of draft.resets) {
@@ -221,10 +244,39 @@ export function AddAccountDialog() {
         })
         resets++
       }
+      for (const payout of draft.payouts) {
+        logEvent(account.id, {
+          type: "payout",
+          date: payout.date,
+          amount: payout.amount,
+        })
+        payouts++
+      }
     }
-    toast.success(
-      `Imported ${pasteResult.drafts.length} ${pasteResult.drafts.length === 1 ? "account" : "accounts"}${resets > 0 ? ` and ${resets} resets` : ""} from pasted orders.`
-    )
+    for (const group of existingPayoutMatches.matched) {
+      const existing = accounts.find((a) => a.externalId === group.accountId)
+      if (!existing) continue
+      for (const payout of group.payouts) {
+        logEvent(existing.id, {
+          type: "payout",
+          date: payout.date,
+          amount: payout.amount,
+        })
+        payouts++
+      }
+    }
+    const parts = [
+      pasteResult.drafts.length > 0 &&
+        `${pasteResult.drafts.length} ${pasteResult.drafts.length === 1 ? "account" : "accounts"}`,
+      resets > 0 && `${resets} ${resets === 1 ? "reset" : "resets"}`,
+      payouts > 0 && `${payouts} ${payouts === 1 ? "payout" : "payouts"}`,
+    ].filter(Boolean)
+    toast.success(`Imported ${parts.join(", ")} from paste.`)
+    if (existingPayoutMatches.orphaned.length > 0) {
+      toast.error(
+        `No account matches payout ID${existingPayoutMatches.orphaned.length === 1 ? "" : "s"} ${existingPayoutMatches.orphaned.join(", ")} — those payouts were skipped.`
+      )
+    }
     resetAndClose()
   }
 
@@ -319,21 +371,23 @@ export function AddAccountDialog() {
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="acct-paste">
-                  Paste your order history
+                  Paste your order and payout history
                 </FieldLabel>
                 <Textarea
                   id="acct-paste"
                   rows={9}
                   className="font-mono text-xs"
-                  placeholder={`Order #\tDate\tProducts\tTotal\tPayment\tStatus\n#6307059\tJul 5, 2026\tLucidFlex 50K NT_TDV\t$70.00\tCredit Card\tcompleted`}
+                  placeholder={`Order #\tDate\tProducts\tTotal\tPayment\tStatus\n#6307059\tJul 5, 2026\tLucidFlex 50K NT_TDV\t$70.00\tCredit Card\tcompleted\n\nAccount ID\tRequest Date\tApproval Date\tAmount\tStatus\nLFF05079150180003\tJul 5, 2026\tJul 5, 2026\t$1806.75\tPaid`}
                   value={pasteText}
                   onChange={(e) => setPasteText(e.target.value)}
                 />
                 <FieldDescription>
-                  Copy the order table straight from your firm&apos;s
-                  dashboard. Products are matched against the plan catalog;
-                  &quot;Reset&quot; rows attach as reset events to the matching
-                  account.
+                  Copy the order table — and optionally the payout table —
+                  straight from your firm&apos;s dashboard, in the same paste.
+                  Products are matched against the plan catalog,
+                  &quot;Reset&quot; rows attach as reset events, and payout
+                  rows attach to the account with the matching ID (or the
+                  oldest account purchased before the payout).
                 </FieldDescription>
               </Field>
               {pasteResult && (
@@ -342,9 +396,29 @@ export function AddAccountDialog() {
                     {pasteResult.drafts.length}{" "}
                     {pasteResult.drafts.length === 1 ? "account" : "accounts"}{" "}
                     · {pasteResult.resetCount}{" "}
-                    {pasteResult.resetCount === 1 ? "reset" : "resets"} ready
-                    to import
+                    {pasteResult.resetCount === 1 ? "reset" : "resets"} ·{" "}
+                    {pasteResult.payoutCount +
+                      existingPayoutMatches.matched.reduce(
+                        (sum, g) => sum + g.payouts.length,
+                        0
+                      )}{" "}
+                    payouts ready to import
                   </span>
+                  {existingPayoutMatches.matched.length > 0 && (
+                    <span className="text-muted-foreground">
+                      Payouts for{" "}
+                      {existingPayoutMatches.matched
+                        .map((g) => g.accountId)
+                        .join(", ")}{" "}
+                      will attach to your existing accounts.
+                    </span>
+                  )}
+                  {existingPayoutMatches.orphaned.map((accountId) => (
+                    <span key={accountId} className="text-destructive">
+                      No account matches payout ID {accountId} — those payouts
+                      will be skipped.
+                    </span>
+                  ))}
                   {pasteResult.skipped.slice(0, 3).map((note) => (
                     <span key={note} className="text-destructive">
                       {note}
@@ -368,13 +442,19 @@ export function AddAccountDialog() {
               </Button>
               <Button
                 type="button"
-                disabled={!pasteResult || pasteResult.drafts.length === 0}
+                disabled={
+                  !pasteResult ||
+                  (pasteResult.drafts.length === 0 &&
+                    existingPayoutMatches.matched.length === 0)
+                }
                 onClick={handlePasteImport}
               >
                 Import{" "}
                 {pasteResult && pasteResult.drafts.length > 0
                   ? `${pasteResult.drafts.length} ${pasteResult.drafts.length === 1 ? "account" : "accounts"}`
-                  : "accounts"}
+                  : pasteResult && existingPayoutMatches.matched.length > 0
+                    ? "payouts"
+                    : "accounts"}
               </Button>
             </DialogFooter>
           </TabsContent>

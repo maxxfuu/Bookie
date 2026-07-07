@@ -6,7 +6,15 @@ import { InstallCommand } from "@/components/install-command"
 import { TerminalDemo } from "@/components/terminal-demo"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
-import { ArrowUpRightIcon, GlobeIcon } from "lucide-react"
+import { CircuitBoard } from "@/components/ui/circuit-board"
+import {
+  ArrowUpRightIcon,
+  Database,
+  Globe,
+  GlobeIcon,
+  Server,
+  Shield,
+} from "lucide-react"
 
 function GitHubIcon({ className }: { className?: string }) {
   return (
@@ -67,6 +75,11 @@ const lineup = [
     title: "Tax",
     description:
       "Deductible expenses by category, bracket estimates for your state, and a CSV ready for your CPA.",
+  },
+  {
+    title: "Notes",
+    description:
+      "Trading notes and journal entries that live right next to your numbers — context for every decision.",
   },
 ]
 
@@ -154,31 +167,78 @@ export default function Page() {
               className="hidden w-full dark:block"
             />
           </div>
-          <section className="flex flex-col gap-5 pt-4 pb-20">
-            <FadeIn className="grid items-center gap-8 md:grid-cols-2">
+          <section className="flex flex-col gap-4 pt-4 pb-20">
+            <FadeIn>
               <h2 className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
                 The lineup
               </h2>
-              <div className="mx-auto hidden w-full max-w-lg md:block">
-                <InstallCommand />
-              </div>
             </FadeIn>
-            <FadeIn delay={0.1} className="grid items-start gap-8 md:grid-cols-2">
-              <div className="flex flex-col divide-y overflow-hidden rounded-lg border">
-                {lineup.map((item) => (
-                  <div key={item.title} className="flex flex-col gap-2 p-5">
-                    <h3 className="text-sm font-semibold">{item.title}</h3>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
-                      {item.description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <div className="mx-auto flex w-full max-w-lg flex-col gap-3">
-                <div className="md:hidden">
-                  <InstallCommand />
+            <FadeIn
+              delay={0.1}
+              className="grid overflow-hidden rounded-lg border max-sm:divide-y sm:grid-cols-4 sm:divide-x"
+            >
+              {lineup.map((item) => (
+                <div key={item.title} className="flex flex-col gap-2 p-4">
+                  <h3 className="text-sm font-semibold">{item.title}</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {item.description}
+                  </p>
                 </div>
+              ))}
+            </FadeIn>
+            <h2 className="fade-up text-3xl font-semibold tracking-tight text-balance sm:text-4xl mt-16 mb-8 mx-auto" style={{ animationDelay: "300ms" }}>
+              Local, Secure, and Open Source
+            </h2>
+            <FadeIn
+              delay={0.2}
+              className="grid items-center gap-8 py-8 lg:-mx-14 lg:grid-cols-[1fr_auto] xl:-mx-24 2xl:-mx-32"
+            >
+              <div className="mx-auto flex w-full max-w-lg flex-col gap-3">
+                <InstallCommand />
                 <TerminalDemo />
+              </div>
+              <div className="hidden [--beam:rgba(52,211,153,0.9)] lg:block dark:[--beam:rgba(34,197,94,0.9)]">
+                <CircuitBoard
+                  nodes={[
+                    {
+                      id: "start",
+                      x: 80,
+                      y: 150,
+                      label: "Browser",
+                      icon: <Globe className="size-4" />,
+                    },
+                    {
+                      id: "process",
+                      x: 250,
+                      y: 80,
+                      label: "Server",
+                      icon: <Server className="h-4 w-4" />,
+                    },
+                    {
+                      id: "validate",
+                      x: 250,
+                      y: 220,
+                      label: "Validate",
+                      icon: <Shield className="h-4 w-4" />,
+                    },
+                    {
+                      id: "end",
+                      x: 420,
+                      y: 150,
+                      label: "Database",
+                      icon: <Database className="h-4 w-4" />,
+                    },
+                  ]}
+                  connections={[
+                    { from: "start", to: "process", animated: true },
+                    { from: "start", to: "validate", animated: true },
+                    { from: "process", to: "end", animated: true },
+                    { from: "validate", to: "end", animated: true },
+                  ]}
+                  width={500}
+                  height={300}
+                  pulseColor="var(--beam)"
+                />
               </div>
             </FadeIn>
           </section>

@@ -3,8 +3,8 @@ import type { Phase } from "@/lib/types"
 import { CircleCheckIcon, CircleXIcon, LoaderIcon } from "lucide-react"
 
 const phaseLabels: Record<Phase, string> = {
-  phase1: "Phase 1",
-  phase2: "Phase 2",
+  phase1: "Evaluation",
+  phase2: "Evaluation",
   funded: "Funded",
   breached: "Breached",
 }

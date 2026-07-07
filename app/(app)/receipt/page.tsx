@@ -110,6 +110,16 @@ export default function Page() {
   const location = taxLocationById(taxLocationId)
   const estTax = stackedTaxFor(location, netTaxable)
 
+  // One receipt row per firm — with 90+ accounts, per-account rows are noise.
+  const firmTotals = new Map<string, { count: number; net: number }>()
+  for (const { account, netProfit: acctNet } of summaries) {
+    const entry = firmTotals.get(account.firm) ?? { count: 0, net: 0 }
+    entry.count += 1
+    entry.net += acctNet
+    firmTotals.set(account.firm, entry)
+  }
+  const firmRows = [...firmTotals.entries()]
+
   return (
     <div className="content-enter flex flex-col items-center gap-4 px-4 py-4 md:py-6">
       <div
@@ -168,19 +178,19 @@ export default function Page() {
             — ACCOUNTS ({accounts.length}) —
           </span>
           <ReceiptRule />
-          {summaries.length === 0 ? (
+          {firmRows.length === 0 ? (
             <span className="text-center text-muted-foreground">
               NO ITEMS
             </span>
           ) : (
-            summaries.map(({ account, phase, netProfit: acctNet }) => (
-              <div key={account.id} className="flex flex-col">
+            firmRows.map(([firm, { count, net }]) => (
+              <div key={firm} className="flex flex-col">
                 <ReceiptLine
-                  label={account.nickname}
-                  value={`${acctNet > 0 ? "+" : ""}${formatCurrency(acctNet)}`}
+                  label={firm}
+                  value={`${net > 0 ? "+" : ""}${formatCurrency(net)}`}
                 />
                 <span className="text-muted-foreground uppercase">
-                  {account.firm} · {account.accountSize / 1000}K · {phase}
+                  {count} {count === 1 ? "account" : "accounts"}
                 </span>
               </div>
             ))
