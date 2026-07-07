@@ -7,53 +7,53 @@ import {
 export function TerminalDemo() {
   return (
     <Terminal className="h-[430px] max-h-none overflow-hidden">
-      <TypingAnimation>&gt; bookie import orders.csv</TypingAnimation>
+      <TypingAnimation>&gt; pnpm dlx shadcn@latest init</TypingAnimation>
 
       <AnimatedSpan className="text-green-500">
-        ✔ Parsed 17 orders from Lucid Trading.
+        ✔ Preflight checks.
       </AnimatedSpan>
 
       <AnimatedSpan className="text-green-500">
-        ✔ Matched plan: LucidFlex 50K.
+        ✔ Verifying framework. Found Next.js.
       </AnimatedSpan>
 
       <AnimatedSpan className="text-green-500">
-        ✔ Created 8 accounts.
+        ✔ Validating Tailwind CSS.
       </AnimatedSpan>
 
       <AnimatedSpan className="text-green-500">
-        ✔ Attached 9 resets as events.
+        ✔ Validating import alias.
       </AnimatedSpan>
 
       <AnimatedSpan className="text-green-500">
-        ✔ Categorized fees for Schedule C.
+        ✔ Writing components.json.
       </AnimatedSpan>
 
       <AnimatedSpan className="text-green-500">
-        ✔ Accrued recurring data fees.
+        ✔ Checking registry.
       </AnimatedSpan>
 
       <AnimatedSpan className="text-green-500">
-        ✔ Synced payouts to the dashboard.
+        ✔ Updating tailwind.config.ts
       </AnimatedSpan>
 
-      <AnimatedSpan className="">✔ Recomputed every chart.</AnimatedSpan>
+      <AnimatedSpan className="">✔ Updating app/globals.css</AnimatedSpan>
 
       <AnimatedSpan className="text-green-500">
-        ✔ Recovery ratio: 231.0%.
+        ✔ Installing dependencies.
       </AnimatedSpan>
 
       <AnimatedSpan className="text-blue-500">
-        <span>ℹ Net profit this year:</span>
-        <span className="pl-2">+ $1,191 · past breakeven</span>
+        <span>ℹ Updated 1 file:</span>
+        <span className="pl-2">- lib/utils.ts</span>
       </AnimatedSpan>
 
       <TypingAnimation className="text-muted-foreground">
-        Success! Your ledger is up to date.
+        Success! Project initialization completed.
       </TypingAnimation>
 
       <TypingAnimation className="text-muted-foreground">
-        Open the dashboard to see the damage.
+        You may now add components.
       </TypingAnimation>
     </Terminal>
   )

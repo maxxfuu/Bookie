@@ -151,3 +151,51 @@ html {
 html::-webkit-scrollbar {
   display: none;
 }
+
+/* --- Motion system (web-animation-design) --------------------------------
+   Only transform/opacity are animated. Easings: ease-out for enter/exit,
+   ease-in-out for on-screen movement, `ease` for hovers. */
+:root {
+  --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-cubic: cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+@keyframes motion-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes motion-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes motion-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+/* Marketing entrance — landing hero, staggered via animation-delay. */
+.fade-up {
+  animation: motion-fade-up 600ms var(--ease-out-quart) both;
+}
+/* Product entrance — fast, opacity-only (seen on every visit). */
+.content-enter {
+  animation: motion-fade 250ms ease-out both;
+}
+/* Micro-feedback — icon swaps, confirmations. */
+.pop-in {
+  animation: motion-pop 150ms var(--ease-out-quart) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-up,
+  .content-enter,
+  .pop-in {
+    animation: none;
+  }
+}

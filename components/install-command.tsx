@@ -30,7 +30,7 @@ export function InstallCommand() {
       {copied ? (
         <CheckIcon
           data-icon="inline-end"
-          className="text-green-500 dark:text-green-400"
+          className="pop-in text-green-500 dark:text-green-400"
         />
       ) : (
         <CopyIcon data-icon="inline-end" className="text-muted-foreground" />

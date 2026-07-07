@@ -87,7 +87,7 @@ export default function Page() {
   const estTax = stackedTaxFor(location, netTaxable)
 
   return (
-    <div className="flex justify-center px-4 py-4 md:py-6">
+    <div className="content-enter flex justify-center px-4 py-4 md:py-6">
       <div className="w-full max-w-sm bg-card px-6 py-8 font-mono text-xs text-card-foreground shadow-md">
         <div className="flex flex-col items-center gap-1 text-center">
           <span className="text-lg font-bold tracking-widest">BOOKIE</span>

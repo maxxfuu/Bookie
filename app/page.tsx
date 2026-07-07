@@ -1,6 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 
+import { FadeIn } from "@/components/fade-in"
 import { InstallCommand } from "@/components/install-command"
 import { TerminalDemo } from "@/components/terminal-demo"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -92,20 +93,26 @@ export default function Page() {
         </header>
         <main className="flex flex-1 flex-col gap-12 pt-10 sm:pt-14">
           <div className="flex flex-col gap-6">
-            <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
+            <h1 className="fade-up text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
               Track your cost between{" "}
               <span className="text-muted-foreground">
                 each trading firm
               </span>
             </h1>
-            <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+            <p
+              className="fade-up max-w-xl text-sm leading-relaxed text-muted-foreground"
+              style={{ animationDelay: "75ms" }}
+            >
               Every eval fee, reset, refund, and payout in one ledger — cost per
               funded account, recovery ratio, and the exact moment you break
               even.{" "}
               <span className="font-medium text-foreground">Local-first.</span>{" "}
               Your data never leaves the browser.
             </p>
-            <div className="flex items-center gap-2 pt-2">
+            <div
+              className="fade-up flex items-center gap-2 pt-2"
+              style={{ animationDelay: "150ms" }}
+            >
               <Button size="sm" render={<Link href="/dashboard" />}>
                 View Demo
                 <ArrowUpRightIcon data-icon="inline-end" />
@@ -126,7 +133,10 @@ export default function Page() {
               </Button>
             </div>
           </div>
-          <div className="my-10 overflow-hidden rounded-xl border shadow-sm lg:-mx-14 xl:-mx-24 2xl:-mx-32 [mask-image:linear-gradient(to_bottom,black_55%,transparent_100%)]">
+          <div
+            className="fade-up my-10 overflow-hidden rounded-xl border shadow-sm lg:-mx-14 xl:-mx-24 2xl:-mx-32 [mask-image:linear-gradient(to_bottom,black_55%,transparent_100%)]"
+            style={{ animationDelay: "250ms" }}
+          >
             <Image
               src="/dashboard-light.png"
               alt="Bookie dashboard"
@@ -145,15 +155,15 @@ export default function Page() {
             />
           </div>
           <section className="flex flex-col gap-5 pt-4 pb-20">
-            <div className="grid items-center gap-8 md:grid-cols-2">
+            <FadeIn className="grid items-center gap-8 md:grid-cols-2">
               <h2 className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
                 The lineup
               </h2>
               <div className="mx-auto hidden w-full max-w-lg md:block">
                 <InstallCommand />
               </div>
-            </div>
-            <div className="grid items-start gap-8 md:grid-cols-2">
+            </FadeIn>
+            <FadeIn delay={0.1} className="grid items-start gap-8 md:grid-cols-2">
               <div className="flex flex-col divide-y overflow-hidden rounded-lg border">
                 {lineup.map((item) => (
                   <div key={item.title} className="flex flex-col gap-2 p-5">
@@ -170,7 +180,7 @@ export default function Page() {
                 </div>
                 <TerminalDemo />
               </div>
-            </div>
+            </FadeIn>
           </section>
         </main>
         <footer className="flex flex-wrap items-center justify-between gap-4 border-t py-6 text-sm text-muted-foreground">

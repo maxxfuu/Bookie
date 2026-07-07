@@ -61,7 +61,7 @@ export default function Page() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-4 md:py-6 lg:px-6">
+    <div className="content-enter mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-4 md:py-6 lg:px-6">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <Field>
           <FieldLabel htmlFor="note-date">Date</FieldLabel>

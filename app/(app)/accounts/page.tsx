@@ -101,7 +101,7 @@ export default function Page() {
   }
 
   return (
-    <div className="flex flex-col gap-6 px-4 py-4 md:py-6 lg:px-6">
+    <div className="content-enter flex flex-col gap-6 px-4 py-4 md:py-6 lg:px-6">
       <div className="flex items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h2 className="text-base font-medium">Accounts</h2>
