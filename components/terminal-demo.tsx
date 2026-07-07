@@ -6,7 +6,7 @@ import {
 
 export function TerminalDemo() {
   return (
-    <Terminal className="mx-auto">
+    <Terminal className="h-[430px] max-h-none overflow-hidden">
       <TypingAnimation>&gt; bookie import orders.csv</TypingAnimation>
 
       <AnimatedSpan className="text-green-500">
