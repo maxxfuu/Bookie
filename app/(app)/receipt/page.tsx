@@ -1,7 +1,9 @@
 "use client"
 
 import * as React from "react"
+import { toast } from "sonner"
 
+import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   accountSummaries,
@@ -19,6 +21,7 @@ import {
 import { formatPct, stackedTaxFor, taxLocationById } from "@/lib/tax-rates"
 import { useAccounts } from "@/lib/store"
 import { cn } from "@/lib/utils"
+import { DownloadIcon } from "lucide-react"
 
 function ReceiptLine({
   label,
@@ -53,6 +56,27 @@ export default function Page() {
   const [receiptNo] = React.useState(() =>
     Math.floor(Math.random() * 1_000_000)
   )
+  const receiptRef = React.useRef<HTMLDivElement>(null)
+
+  async function downloadJpeg() {
+    const node = receiptRef.current
+    if (!node) return
+    try {
+      const { toJpeg } = await import("html-to-image")
+      const dataUrl = await toJpeg(node, {
+        quality: 0.95,
+        pixelRatio: 2,
+        backgroundColor: getComputedStyle(node).backgroundColor,
+      })
+      const anchor = document.createElement("a")
+      anchor.href = dataUrl
+      anchor.download = `bookie-receipt-${String(receiptNo).padStart(6, "0")}.jpeg`
+      anchor.click()
+      toast.success("Receipt downloaded.")
+    } catch {
+      toast.error("Couldn't render the receipt image.")
+    }
+  }
 
   const summaries = React.useMemo(
     () => accountSummaries(accounts, transactions),
@@ -87,8 +111,17 @@ export default function Page() {
   const estTax = stackedTaxFor(location, netTaxable)
 
   return (
-    <div className="content-enter flex justify-center px-4 py-4 md:py-6">
-      <div className="w-full max-w-sm bg-card px-6 py-8 font-mono text-xs text-card-foreground shadow-md">
+    <div className="content-enter flex flex-col items-center gap-4 px-4 py-4 md:py-6">
+      <div className="flex w-full max-w-sm justify-end">
+        <Button variant="outline" size="sm" onClick={downloadJpeg}>
+          <DownloadIcon data-icon="inline-start" />
+          Download JPEG
+        </Button>
+      </div>
+      <div
+        ref={receiptRef}
+        className="w-full max-w-sm bg-card px-6 py-8 font-mono text-xs text-card-foreground shadow-md"
+      >
         <div className="flex flex-col items-center gap-1 text-center">
           <span className="text-lg font-bold tracking-widest">BOOKIE</span>
           <span className="text-muted-foreground">
