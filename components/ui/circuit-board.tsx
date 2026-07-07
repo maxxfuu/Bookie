@@ -62,6 +62,22 @@ function CircuitBoard({
   const [detectedDark, setDetectedDark] = React.useState(true)
   const isDark = variant === "auto" ? detectedDark : variant === "dark"
 
+  // Nodes sit at fixed pixel coordinates, so the board can't reflow; instead
+  // the whole canvas scales down uniformly when its container is narrower
+  // than the design width (e.g. on phones).
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const [scale, setScale] = React.useState(1)
+
+  React.useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const observer = new ResizeObserver(() => {
+      setScale(Math.min(1, el.clientWidth / width))
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [width])
+
   React.useEffect(() => {
     if (variant !== "auto") return
 
@@ -168,13 +184,20 @@ function CircuitBoard({
 
   return (
     <div
-      className={cn(
-        "relative overflow-hidden",
-        className
-      )}
-      style={{ width, height }}
+      ref={containerRef}
+      className={cn("relative w-full", className)}
+      style={{ maxWidth: width, height: height * scale }}
       {...props}
     >
+      <div
+        className="relative overflow-hidden"
+        style={{
+          width,
+          height,
+          transform: `scale(${scale})`,
+          transformOrigin: "top left",
+        }}
+      >
       <svg
         width={width}
         height={height}
@@ -370,6 +393,7 @@ function CircuitBoard({
           </motion.div>
         )
       })}
+      </div>
     </div>
   )
 }

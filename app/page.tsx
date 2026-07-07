@@ -233,7 +233,7 @@ export default function Page() {
                 <InstallCommand />
                 <TerminalDemo />
               </div>
-              <div className="hidden [--beam:rgba(52,211,153,0.9)] lg:block dark:[--beam:rgba(34,197,94,0.9)]">
+              <div className="mx-auto w-full max-w-[500px] [--beam:rgba(52,211,153,0.9)] dark:[--beam:rgba(34,197,94,0.9)]">
                 <CircuitBoard
                   nodes={[
                     {
