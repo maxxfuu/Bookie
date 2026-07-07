@@ -185,7 +185,7 @@ function CircuitBoard({
   return (
     <div
       ref={containerRef}
-      className={cn("relative w-full", className)}
+      className={cn("relative w-full overflow-hidden", className)}
       style={{ maxWidth: width, height: height * scale }}
       {...props}
     >

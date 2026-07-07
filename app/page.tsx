@@ -227,7 +227,7 @@ export default function Page() {
             </h2>
             <FadeIn
               delay={0.2}
-              className="grid items-center gap-8 py-8 lg:-mx-14 lg:grid-cols-[1fr_auto] xl:-mx-24 2xl:-mx-32"
+              className="grid items-center gap-8 py-8 xl:-mx-24 xl:grid-cols-[1fr_auto] 2xl:-mx-32"
             >
               <div className="mx-auto flex w-full max-w-lg flex-col gap-3">
                 <InstallCommand />
