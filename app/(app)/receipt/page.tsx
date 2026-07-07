@@ -112,12 +112,6 @@ export default function Page() {
 
   return (
     <div className="content-enter flex flex-col items-center gap-4 px-4 py-4 md:py-6">
-      <div className="flex w-full max-w-sm justify-end">
-        <Button variant="outline" size="sm" onClick={downloadJpeg}>
-          <DownloadIcon data-icon="inline-start" />
-          Download JPEG
-        </Button>
-      </div>
       <div
         ref={receiptRef}
         className="w-full max-w-sm bg-card px-6 py-8 font-mono text-xs text-card-foreground shadow-md"
@@ -248,6 +242,10 @@ export default function Page() {
           </span>
         </div>
       </div>
+      <Button variant="outline" size="sm" onClick={downloadJpeg}>
+        <DownloadIcon data-icon="inline-start" />
+        Download JPEG
+      </Button>
     </div>
   )
 }
