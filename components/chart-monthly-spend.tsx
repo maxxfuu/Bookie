@@ -36,10 +36,8 @@ export function ChartMonthlySpend() {
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>How much per month?</CardTitle>
-        <CardDescription>
-          Monthly burn — reset spikes and re-buys stand out
-        </CardDescription>
+        <CardTitle>Monthly Spend</CardTitle>
+        <CardDescription>Total fees paid per month</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer

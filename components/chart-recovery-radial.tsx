@@ -24,11 +24,12 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import {
-  cumulativeNetSpend,
   formatCurrency,
   recoveryRatio,
+  totalNetProfit,
 } from "@/lib/selectors"
 import { useAccounts } from "@/lib/store"
+import { cn, signedClass } from "@/lib/utils"
 
 const chartConfig = {
   value: {
@@ -42,10 +43,10 @@ const chartConfig = {
 
 export function ChartRecoveryRadial() {
   const { transactions } = useAccounts()
-  const { ratio, netSpend } = React.useMemo(
+  const { ratio, netProfit } = React.useMemo(
     () => ({
       ratio: recoveryRatio(transactions),
-      netSpend: cumulativeNetSpend(transactions),
+      netProfit: totalNetProfit(transactions),
     }),
     [transactions]
   )
@@ -60,7 +61,7 @@ export function ChartRecoveryRadial() {
   return (
     <Card className="@container/card flex flex-col">
       <CardHeader>
-        <CardTitle>How close to breakeven?</CardTitle>
+        <CardTitle>Recovery Progress</CardTitle>
         <CardDescription>
           Payouts as a share of gross spend — a full ring is breakeven
         </CardDescription>
@@ -124,9 +125,9 @@ export function ChartRecoveryRadial() {
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col gap-1.5 text-sm">
-        <div className="font-medium">
-          {formatCurrency(Math.abs(netSpend))}{" "}
-          {netSpend >= 0 ? "still in the hole" : "past breakeven"}
+        <div className={cn("font-medium", signedClass(netProfit))}>
+          {formatCurrency(Math.abs(netProfit))}{" "}
+          {netProfit >= 0 ? "past breakeven" : "still in the hole"}
         </div>
         <div className="text-muted-foreground">
           Net of payouts and received refunds

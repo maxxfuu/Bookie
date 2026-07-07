@@ -62,7 +62,7 @@ export function ChartSpendByFeeType() {
   return (
     <Card className="@container/card flex flex-col">
       <CardHeader>
-        <CardTitle>Where did my money go?</CardTitle>
+        <CardTitle>Fee Breakdown</CardTitle>
         <CardDescription>All-time spend by fee type</CardDescription>
       </CardHeader>
       <CardContent className="flex-1">

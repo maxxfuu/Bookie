@@ -36,6 +36,20 @@ export type FeeType =
 
 export type RefundStatus = "none" | "pending" | "received"
 
+/** Schedule-C-shaped buckets for the Tax tab. */
+export const TAX_CATEGORIES = [
+  "fees_commissions",
+  "software_data",
+  "education_research",
+  "equipment_hardware",
+  "home_office",
+  "business_meals",
+  "professional_services",
+  "other",
+] as const
+
+export type TaxCategory = (typeof TAX_CATEGORIES)[number]
+
 export type Transaction = {
   id: string
   date: string // ISO
@@ -52,6 +66,9 @@ export type Transaction = {
   payout: number // inflow on this row, 0 if none
   profitSplitPct?: number // context on payout rows
   breachReason?: BreachReason // context on phase-change rows to "breached"
+  /** Tax overlay: whether this row counts as a deductible business expense. */
+  deductible: boolean
+  taxCategory: TaxCategory | null
 }
 
 /** Rule terms that feed the radar; defaulted from lib/firms.ts, overridable per account. */
@@ -81,6 +98,8 @@ export type Account = {
   id: string
   firm: Firm
   nickname: string
+  /** The firm-issued account identifier; "" when the user hasn't provided it. */
+  externalId: string
   accountSize: number
   programType: ProgramType
   startDate: string // ISO — anchors all time series
@@ -99,6 +118,33 @@ export type Account = {
 
 /** What the Add-account flow produces; the store assigns the id. */
 export type AccountInput = Omit<Account, "id">
+
+/**
+ * Standalone business expense not tied to any account (hardware, data feeds,
+ * courses, meals, home office). Account fees are NOT re-entered here — the
+ * Tax tab unions these with deductible transactions.
+ */
+export type Expense = {
+  id: string
+  date: string // ISO — determines which tax year it falls in
+  vendor: string
+  amount: number // full amount paid
+  taxCategory: TaxCategory
+  /** 0–100; mixed-use items (internet, phone, home office) aren't 100%. */
+  deductiblePct: number
+  receiptUrl: string | null
+  /** One-line "why this is a business expense" — audit substantiation. */
+  businessPurpose: string
+}
+
+export type ExpenseInput = Omit<Expense, "id">
+
+/** A daily trading note / reflection. */
+export type Note = {
+  id: string
+  date: string // ISO
+  content: string
+}
 
 /** Events logged against an account after creation. */
 export type LogEventInput =

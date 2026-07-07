@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import Link from "next/link"
 
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
@@ -25,6 +26,15 @@ import { ChartPieIcon, PlusIcon } from "lucide-react"
 
 export default function Page() {
   const { hydrated, accounts, transactions } = useAccounts()
+
+  // The transaction log shows the same account identity as the Accounts tab.
+  const logRows = React.useMemo(() => {
+    const nicknames = new Map(accounts.map((a) => [a.id, a.nickname]))
+    return transactions.map((t) => ({
+      ...t,
+      accountLabel: nicknames.get(t.accountId) ?? "Account removed",
+    }))
+  }, [accounts, transactions])
 
   if (!hydrated) {
     return (
@@ -82,7 +92,7 @@ export default function Page() {
           <ChartFirmRadar />
         </div>
       </div>
-      <DataTable data={transactions} />
+      <DataTable data={logRows} />
     </div>
   )
 }

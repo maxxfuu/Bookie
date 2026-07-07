@@ -1,6 +1,8 @@
 import Link from "next/link"
 
 import { ImagePlaceholder } from "@/components/image-placeholder"
+import { TerminalDemo } from "@/components/terminal-demo"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { ArrowUpRightIcon } from "lucide-react"
 
@@ -43,22 +45,17 @@ export default function Page() {
           <Link href="/" className="text-sm font-bold">
             bookie.
           </Link>
-          <nav className="flex items-center gap-4">
-            <Link
-              href="/dashboard"
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Dashboard
-            </Link>
+          <nav className="flex items-center gap-2">
             <a
               href="https://github.com"
               target="_blank"
               rel="noreferrer"
-              className="text-muted-foreground transition-colors hover:text-foreground"
+              className="px-2 text-muted-foreground transition-colors hover:text-foreground"
             >
               <GitHubIcon className="size-4.5" />
               <span className="sr-only">GitHub</span>
             </a>
+            <ThemeToggle />
           </nav>
         </header>
         <main className="flex flex-1 flex-col gap-8 pt-6">
@@ -78,15 +75,21 @@ export default function Page() {
             </p>
             <div className="flex items-center gap-2">
               <Button size="sm" render={<Link href="/dashboard" />}>
-                Open the dashboard
+                View Demo
                 <ArrowUpRightIcon data-icon="inline-end" />
               </Button>
               <Button
                 size="sm"
                 variant="outline"
-                render={<Link href="/accounts" />}
+                render={
+                  <a
+                    href="https://github.com"
+                    target="_blank"
+                    rel="noreferrer"
+                  />
+                }
               >
-                Add an account
+                Fork on Github
               </Button>
             </div>
           </div>
@@ -104,6 +107,9 @@ export default function Page() {
                   </p>
                 </div>
               ))}
+            </div>
+            <div className="py-8">
+              <TerminalDemo />
             </div>
           </section>
         </main>

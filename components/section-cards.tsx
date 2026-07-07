@@ -13,35 +13,36 @@ import {
 } from "@/components/ui/card"
 import {
   costPerFundedAccount,
-  cumulativeNetSpend,
   formatCurrency,
   fundedAccountCount,
   grossFees,
   monthlyNetFlow,
   recoveryRatio,
   recoveryTrend,
+  totalNetProfit,
   totalPayouts,
   totalRefundsReceived,
 } from "@/lib/selectors"
 import { useAccounts } from "@/lib/store"
+import { cn, positiveClass, signedClass } from "@/lib/utils"
 import { TrendingUpIcon, TrendingDownIcon } from "lucide-react"
 
 export function SectionCards() {
   const { accounts, transactions } = useAccounts()
 
   const {
-    netSpend,
+    netProfit,
     gross,
     recovered,
     costPerFunded,
     funded,
     recovery,
     trend,
-    lastMonthNet,
+    lastMonthProfit,
   } = React.useMemo(() => {
     const flows = monthlyNetFlow(transactions)
     return {
-      netSpend: cumulativeNetSpend(transactions),
+      netProfit: totalNetProfit(transactions),
       gross: grossFees(transactions),
       recovered:
         totalPayouts(transactions) + totalRefundsReceived(transactions),
@@ -49,7 +50,7 @@ export function SectionCards() {
       funded: fundedAccountCount(transactions),
       recovery: recoveryRatio(transactions),
       trend: recoveryTrend(transactions),
-      lastMonthNet: flows[flows.length - 1]?.net ?? 0,
+      lastMonthProfit: -(flows[flows.length - 1]?.net ?? 0),
     }
   }, [transactions])
 
@@ -60,33 +61,43 @@ export function SectionCards() {
     <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Net Spend</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {formatCurrency(netSpend)}
+          <CardDescription>Net Profit</CardDescription>
+          <CardTitle
+            className={cn(
+              "text-2xl font-semibold tabular-nums @[250px]/card:text-3xl",
+              signedClass(netProfit)
+            )}
+          >
+            {formatCurrency(netProfit)}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              {lastMonthNet <= 0 ? <TrendingDownIcon /> : <TrendingUpIcon />}
-              {formatCurrency(lastMonthNet)} last mo
+            <Badge
+              variant="outline"
+              className={cn(signedClass(lastMonthProfit))}
+            >
+              {lastMonthProfit >= 0 ? <TrendingUpIcon /> : <TrendingDownIcon />}
+              {lastMonthProfit >= 0 ? "+" : ""}
+              {formatCurrency(lastMonthProfit)} last mo
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            {lastMonthNet <= 0 ? (
+            {netProfit >= 0 ? (
               <>
-                Payouts outpaced fees last month{" "}
-                <TrendingDownIcon className="size-4" />
+                Payouts have outrun total fees{" "}
+                <TrendingUpIcon className="size-4" />
               </>
             ) : (
               <>
-                Still burning cash <TrendingUpIcon className="size-4" />
+                Still recovering acquisition costs{" "}
+                <TrendingDownIcon className="size-4" />
               </>
             )}
           </div>
           <div className="text-muted-foreground">
-            {formatCurrency(gross)} spent · {formatCurrency(recovered)}{" "}
-            recovered
+            {formatCurrency(recovered)} earned · {formatCurrency(gross)} in
+            fees
           </div>
         </CardFooter>
       </Card>
@@ -113,11 +124,19 @@ export function SectionCards() {
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>Recovery Ratio</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+          <CardTitle
+            className={cn(
+              "text-2xl font-semibold tabular-nums @[250px]/card:text-3xl",
+              recovery >= 1 && positiveClass
+            )}
+          >
             {(recovery * 100).toFixed(1)}%
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
+            <Badge
+              variant="outline"
+              className={cn(signedClass(trend.deltaPoints))}
+            >
               {trend.deltaPoints >= 0 ? (
                 <TrendingUpIcon />
               ) : (

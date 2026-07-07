@@ -18,10 +18,8 @@ import {
 import {
   LayoutDashboardIcon,
   ListIcon,
-  ChartBarIcon,
-  FolderIcon,
-  UsersIcon,
-  Settings2Icon,
+  ReceiptIcon,
+  NotebookPenIcon,
   CircleHelpIcon,
   SearchIcon,
   DatabaseIcon,
@@ -47,27 +45,17 @@ const data = {
       icon: <ListIcon />,
     },
     {
-      title: "Analytics",
-      url: "#",
-      icon: <ChartBarIcon />,
+      title: "Tax",
+      url: "/tax",
+      icon: <ReceiptIcon />,
     },
     {
-      title: "Firms",
-      url: "#",
-      icon: <FolderIcon />,
-    },
-    {
-      title: "Payouts",
-      url: "#",
-      icon: <UsersIcon />,
+      title: "Notes",
+      url: "/notes",
+      icon: <NotebookPenIcon />,
     },
   ],
   navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: <Settings2Icon />,
-    },
     {
       title: "Get Help",
       url: "#",

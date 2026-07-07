@@ -32,8 +32,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { parseAccountFile, parseAccountInput } from "@/lib/account-schema"
+import { parseOrderPaste } from "@/lib/order-paste"
 import {
   planById,
   plansFor,
@@ -48,7 +50,13 @@ import { FileUpIcon, PlusIcon, UploadIcon, XIcon } from "lucide-react"
 
 /** Fallback sizes if a firm has no catalog entries yet. */
 const FALLBACK_SIZES = [25000, 50000, 100000, 150000]
-const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD"]
+const CURRENCIES = [
+  { value: "USD", label: "🇺🇸 USD" },
+  { value: "EUR", label: "🇪🇺 EUR" },
+  { value: "GBP", label: "🇬🇧 GBP" },
+  { value: "CAD", label: "🇨🇦 CAD" },
+  { value: "AUD", label: "🇦🇺 AUD" },
+]
 const PROGRAM_LABELS: Record<ProgramType, string> = {
   "one-step": "1-step",
   "two-step": "2-step",
@@ -60,6 +68,7 @@ type AddonDraft = { name: string; cost: string }
 type FormState = {
   firm: Firm
   nickname: string
+  externalId: string
   accountSize: string
   programType: ProgramType
   startDate: string
@@ -101,6 +110,7 @@ function initialForm(): FormState {
   const base: FormState = {
     firm,
     nickname: "",
+    externalId: "",
     accountSize: String(size ?? FALLBACK_SIZES[1]),
     programType: "one-step",
     startDate: todayISO(),
@@ -134,12 +144,18 @@ const RULE_FIELDS: { key: keyof AccountRules; label: string }[] = [
 ]
 
 export function AddAccountDialog() {
-  const { addAccount } = useAccounts()
+  const { addAccount, logEvent } = useAccounts()
   const [open, setOpen] = React.useState(false)
   const [form, setForm] = React.useState<FormState>(initialForm)
   const [planId, setPlanId] = React.useState<string>(initialPlanId)
   const [dragging, setDragging] = React.useState(false)
+  const [pasteText, setPasteText] = React.useState("")
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+
+  const pasteResult = React.useMemo(
+    () => (pasteText.trim() === "" ? null : parseOrderPaste(pasteText)),
+    [pasteText]
+  )
 
   const patch = (fields: Partial<FormState>) =>
     setForm((prev) => ({ ...prev, ...fields }))
@@ -187,7 +203,28 @@ export function AddAccountDialog() {
   function resetAndClose() {
     setForm(initialForm())
     setPlanId(initialPlanId())
+    setPasteText("")
     setOpen(false)
+  }
+
+  function handlePasteImport() {
+    if (!pasteResult || pasteResult.drafts.length === 0) return
+    let resets = 0
+    for (const draft of pasteResult.drafts) {
+      const account = addAccount(draft.input)
+      for (const reset of draft.resets) {
+        logEvent(account.id, {
+          type: "reset",
+          date: reset.date,
+          cost: reset.cost,
+        })
+        resets++
+      }
+    }
+    toast.success(
+      `Imported ${pasteResult.drafts.length} ${pasteResult.drafts.length === 1 ? "account" : "accounts"}${resets > 0 ? ` and ${resets} resets` : ""} from pasted orders.`
+    )
+    resetAndClose()
   }
 
   function handleManualSubmit(event: React.FormEvent) {
@@ -200,6 +237,7 @@ export function AddAccountDialog() {
           : selectedPlan
             ? `${form.firm} ${selectedPlan.programName}`
             : "",
+      externalId: form.externalId,
       accountSize: form.accountSize,
       programType: form.programType,
       startDate: form.startDate,
@@ -274,7 +312,71 @@ export function AddAccountDialog() {
           <TabsList className="w-full">
             <TabsTrigger value="manual">Fill out manually</TabsTrigger>
             <TabsTrigger value="import">Import file</TabsTrigger>
+            <TabsTrigger value="paste">Paste orders</TabsTrigger>
           </TabsList>
+          <TabsContent value="paste">
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="acct-paste">
+                  Paste your order history
+                </FieldLabel>
+                <Textarea
+                  id="acct-paste"
+                  rows={9}
+                  className="font-mono text-xs"
+                  placeholder={`Order #\tDate\tProducts\tTotal\tPayment\tStatus\n#6307059\tJul 5, 2026\tLucidFlex 50K NT_TDV\t$70.00\tCredit Card\tcompleted`}
+                  value={pasteText}
+                  onChange={(e) => setPasteText(e.target.value)}
+                />
+                <FieldDescription>
+                  Copy the order table straight from your firm&apos;s
+                  dashboard. Products are matched against the plan catalog;
+                  &quot;Reset&quot; rows attach as reset events to the matching
+                  account.
+                </FieldDescription>
+              </Field>
+              {pasteResult && (
+                <div className="flex flex-col gap-1.5 text-sm">
+                  <span className="font-medium">
+                    {pasteResult.drafts.length}{" "}
+                    {pasteResult.drafts.length === 1 ? "account" : "accounts"}{" "}
+                    · {pasteResult.resetCount}{" "}
+                    {pasteResult.resetCount === 1 ? "reset" : "resets"} ready
+                    to import
+                  </span>
+                  {pasteResult.skipped.slice(0, 3).map((note) => (
+                    <span key={note} className="text-destructive">
+                      {note}
+                    </span>
+                  ))}
+                  {pasteResult.skipped.length > 3 && (
+                    <span className="text-muted-foreground">
+                      +{pasteResult.skipped.length - 3} more lines skipped
+                    </span>
+                  )}
+                </div>
+              )}
+            </FieldGroup>
+            <DialogFooter className="mt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                disabled={!pasteResult || pasteResult.drafts.length === 0}
+                onClick={handlePasteImport}
+              >
+                Import{" "}
+                {pasteResult && pasteResult.drafts.length > 0
+                  ? `${pasteResult.drafts.length} ${pasteResult.drafts.length === 1 ? "account" : "accounts"}`
+                  : "accounts"}
+              </Button>
+            </DialogFooter>
+          </TabsContent>
           <TabsContent value="import">
             <div
               role="button"
@@ -458,6 +560,24 @@ export function AddAccountDialog() {
                         </FieldDescription>
                       </Field>
                       <Field>
+                        <FieldLabel htmlFor="acct-external">
+                          Account ID
+                        </FieldLabel>
+                        <Input
+                          id="acct-external"
+                          placeholder="e.g. LT-2843917"
+                          value={form.externalId}
+                          onChange={(e) =>
+                            patch({ externalId: e.target.value })
+                          }
+                        />
+                        <FieldDescription>
+                          Optional — the identifier the firm assigned.
+                        </FieldDescription>
+                      </Field>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Field>
                         <FieldLabel>Program type</FieldLabel>
                         <ToggleGroup
                           multiple={false}
@@ -486,8 +606,6 @@ export function AddAccountDialog() {
                           Set from the plan — override only for promo variants.
                         </FieldDescription>
                       </Field>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
                       <Field>
                         <FieldLabel htmlFor="acct-start">
                           Purchase / start date
@@ -512,19 +630,16 @@ export function AddAccountDialog() {
                           onValueChange={(value) => {
                             if (value) patch({ currency: value })
                           }}
-                          items={CURRENCIES.map((c) => ({
-                            label: c,
-                            value: c,
-                          }))}
+                          items={CURRENCIES}
                         >
                           <SelectTrigger id="acct-currency" className="w-full">
-                            <SelectValue placeholder="USD" />
+                            <SelectValue placeholder="🇺🇸 USD" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectGroup>
                               {CURRENCIES.map((c) => (
-                                <SelectItem key={c} value={c}>
-                                  {c}
+                                <SelectItem key={c.value} value={c.value}>
+                                  {c.label}
                                 </SelectItem>
                               ))}
                             </SelectGroup>

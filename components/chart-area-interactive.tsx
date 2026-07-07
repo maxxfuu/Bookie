@@ -39,11 +39,11 @@ export const description = "Cumulative spend vs payouts over time"
 const chartConfig = {
   spend: {
     label: "Total Spend",
-    color: "var(--chart-3)",
+    color: "var(--color-rose-500)",
   },
   payouts: {
     label: "Total Payouts",
-    color: "var(--chart-1)",
+    color: "var(--color-green-500)",
   },
 } satisfies ChartConfig
 
@@ -89,7 +89,7 @@ export function ChartAreaInteractive() {
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Am I bleeding or catching up?</CardTitle>
+        <CardTitle>Spend vs Payouts</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
             Cumulative spend vs payouts · {recoveredPct}% recovered ·{" "}

@@ -6,7 +6,12 @@ import { currentPhase } from "@/lib/selectors"
 import type {
   Account,
   AccountInput,
+  Expense,
+  ExpenseInput,
+  Note,
+  FeeType,
   LogEventInput,
+  TaxCategory,
   Transaction,
   RefundStatus,
 } from "@/lib/types"
@@ -17,6 +22,8 @@ const STORAGE_KEY = "bookie.store.v2"
 type StoreState = {
   accounts: Account[]
   transactions: Transaction[]
+  expenses: Expense[]
+  notes: Note[]
 }
 
 type Snapshot = StoreState & {
@@ -27,7 +34,27 @@ type Snapshot = StoreState & {
 const EMPTY_SNAPSHOT: Snapshot = {
   accounts: [],
   transactions: [],
+  expenses: [],
+  notes: [],
   hydrated: false,
+}
+
+/** Tax overlay defaults: money spent on the firm is a deductible business fee. */
+function taxDefaultsFor(feeType: FeeType): {
+  deductible: boolean
+  taxCategory: TaxCategory | null
+} {
+  switch (feeType) {
+    case "eval":
+    case "reset":
+    case "activation":
+    case "addon":
+      return { deductible: true, taxCategory: "fees_commissions" }
+    case "recurring":
+      return { deductible: true, taxCategory: "software_data" }
+    default:
+      return { deductible: false, taxCategory: null }
+  }
 }
 
 function toISODate(date: Date) {
@@ -55,6 +82,7 @@ function makeTransaction(
     refundStatus: "none",
     refundAmount: 0,
     payout: 0,
+    ...taxDefaultsFor(fields.feeType),
     ...fields,
   }
 }
@@ -132,14 +160,24 @@ function loadPersistedState(): StoreState {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (!raw) return EMPTY_SNAPSHOT
-    const parsed = JSON.parse(raw) as StoreState
+    const parsed = JSON.parse(raw) as Partial<StoreState>
     if (
       !Array.isArray(parsed.accounts) ||
       !Array.isArray(parsed.transactions)
     ) {
       return EMPTY_SNAPSHOT
     }
-    return { accounts: parsed.accounts, transactions: parsed.transactions }
+    return {
+      accounts: parsed.accounts,
+      // Rows persisted before the tax overlay get defaults from their fee type.
+      transactions: parsed.transactions.map((t) =>
+        t.deductible === undefined
+          ? { ...t, ...taxDefaultsFor(t.feeType) }
+          : t
+      ),
+      expenses: Array.isArray(parsed.expenses) ? parsed.expenses : [],
+      notes: Array.isArray(parsed.notes) ? parsed.notes : [],
+    }
   } catch {
     return EMPTY_SNAPSHOT
   }
@@ -233,7 +271,12 @@ function applyEvent(
       )
       break
   }
-  return { accounts, transactions: [...transactions, row] }
+  return {
+    accounts,
+    transactions: [...transactions, row],
+    expenses: state.expenses,
+    notes: state.notes,
+  }
 }
 
 /**
@@ -256,6 +299,8 @@ class AccountsStore {
         JSON.stringify({
           accounts: this.snapshot.accounts,
           transactions: this.snapshot.transactions,
+          expenses: this.snapshot.expenses,
+          notes: this.snapshot.notes,
         })
       )
     } catch {
@@ -281,6 +326,8 @@ class AccountsStore {
         accrued.length > 0
           ? [...state.transactions, ...accrued]
           : state.transactions,
+      expenses: state.expenses,
+      notes: state.notes,
       hydrated: true,
     }
     this.persist()
@@ -302,6 +349,7 @@ class AccountsStore {
     const account: Account = { ...input, id: crypto.randomUUID() }
     this.setState((prev) => {
       const withAccount = {
+        ...prev,
         accounts: [...prev.accounts, account],
         transactions: [...prev.transactions, ...initialTransactions(account)],
       }
@@ -318,6 +366,7 @@ class AccountsStore {
 
   removeAccount = (accountId: string) => {
     this.setState((prev) => ({
+      ...prev,
       accounts: prev.accounts.filter((a) => a.id !== accountId),
       transactions: prev.transactions.filter((t) => t.accountId !== accountId),
     }))
@@ -329,6 +378,35 @@ class AccountsStore {
       if (!account) return prev
       return applyEvent(prev, account, event, crypto.randomUUID())
     })
+  }
+
+  addExpense = (input: ExpenseInput): Expense => {
+    const expense: Expense = { ...input, id: crypto.randomUUID() }
+    this.setState((prev) => ({
+      ...prev,
+      expenses: [...prev.expenses, expense],
+    }))
+    return expense
+  }
+
+  removeExpense = (expenseId: string) => {
+    this.setState((prev) => ({
+      ...prev,
+      expenses: prev.expenses.filter((e) => e.id !== expenseId),
+    }))
+  }
+
+  addNote = (date: string, content: string): Note => {
+    const note: Note = { id: crypto.randomUUID(), date, content }
+    this.setState((prev) => ({ ...prev, notes: [...prev.notes, note] }))
+    return note
+  }
+
+  removeNote = (noteId: string) => {
+    this.setState((prev) => ({
+      ...prev,
+      notes: prev.notes.filter((n) => n.id !== noteId),
+    }))
   }
 }
 
@@ -345,5 +423,9 @@ export function useAccounts() {
     addAccount: store.addAccount,
     removeAccount: store.removeAccount,
     logEvent: store.logEvent,
+    addExpense: store.addExpense,
+    removeExpense: store.removeExpense,
+    addNote: store.addNote,
+    removeNote: store.removeNote,
   }
 }

@@ -64,6 +64,8 @@ export const schema = z.object({
   date: z.string(),
   firm: z.enum(FIRM_NAMES),
   accountId: z.string(),
+  /** Display name resolved from the owning account (nickname). */
+  accountLabel: z.string(),
   feeType: z.enum([
     "eval",
     "reset",
@@ -191,10 +193,12 @@ const columns: ColumnDef<TransactionRow>[] = [
     cell: ({ row }) => <span className="font-medium">{row.original.firm}</span>,
   },
   {
-    accessorKey: "accountId",
+    accessorKey: "accountLabel",
     header: "Account",
     cell: ({ row }) => (
-      <span className="text-muted-foreground">{row.original.accountId}</span>
+      <span className="text-muted-foreground">
+        {row.original.accountLabel}
+      </span>
     ),
   },
   {

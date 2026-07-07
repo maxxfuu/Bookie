@@ -8,6 +8,8 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 const ROUTE_TITLES: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/accounts": "Accounts",
+  "/tax": "Tax",
+  "/notes": "Notes",
 }
 
 export function SiteHeader() {

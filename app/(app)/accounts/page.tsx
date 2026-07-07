@@ -8,6 +8,7 @@ import { LogEventDialog } from "@/components/log-event-dialog"
 import { PhaseBadge } from "@/components/phase-badge"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +35,7 @@ import {
 } from "@/components/ui/table"
 import { accountSummaries, formatCurrency } from "@/lib/selectors"
 import { useAccounts } from "@/lib/store"
+import { cn, signedClass } from "@/lib/utils"
 import type { Account, ProgramType } from "@/lib/types"
 import { EllipsisVerticalIcon, WalletIcon } from "lucide-react"
 
@@ -46,11 +48,48 @@ const PROGRAM_LABELS: Record<ProgramType, string> = {
 export default function Page() {
   const { hydrated, accounts, transactions, removeAccount } = useAccounts()
   const [logTarget, setLogTarget] = React.useState<Account | null>(null)
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(
+    () => new Set()
+  )
 
   const summaries = React.useMemo(
     () => accountSummaries(accounts, transactions),
     [accounts, transactions]
   )
+
+  // Ignore stale ids (e.g. after a removal) without an extra effect.
+  const selected = React.useMemo(
+    () =>
+      new Set(accounts.map((a) => a.id).filter((id) => selectedIds.has(id))),
+    [accounts, selectedIds]
+  )
+  const allSelected = accounts.length > 0 && selected.size === accounts.length
+
+  function toggleAll(checked: boolean) {
+    setSelectedIds(checked ? new Set(accounts.map((a) => a.id)) : new Set())
+  }
+
+  function toggleOne(accountId: string, checked: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (checked) {
+        next.add(accountId)
+      } else {
+        next.delete(accountId)
+      }
+      return next
+    })
+  }
+
+  function removeSelected() {
+    for (const id of selected) {
+      removeAccount(id)
+    }
+    setSelectedIds(new Set())
+    toast.success(
+      `Removed ${selected.size} ${selected.size === 1 ? "account" : "accounts"} and their transactions.`
+    )
+  }
 
   if (!hydrated) {
     return (
@@ -96,6 +135,16 @@ export default function Page() {
           <Table>
             <TableHeader className="bg-muted">
               <TableRow>
+                <TableHead className="w-8">
+                  <div className="flex items-center justify-center">
+                    <Checkbox
+                      checked={allSelected}
+                      indeterminate={selected.size > 0 && !allSelected}
+                      onCheckedChange={(checked) => toggleAll(!!checked)}
+                      aria-label="Select all accounts"
+                    />
+                  </div>
+                </TableHead>
                 <TableHead>Account</TableHead>
                 <TableHead>Firm</TableHead>
                 <TableHead>Size</TableHead>
@@ -104,15 +153,34 @@ export default function Page() {
                 <TableHead>Phase</TableHead>
                 <TableHead className="text-right">Spend</TableHead>
                 <TableHead className="text-right">Payouts</TableHead>
-                <TableHead className="text-right">Net</TableHead>
+                <TableHead className="text-right">Net P/L</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {summaries.map(({ account, phase, spend, payouts, netSpend }) => (
-                <TableRow key={account.id}>
-                  <TableCell className="font-medium">
-                    {account.nickname}
+              {summaries.map(({ account, phase, spend, payouts, netProfit }) => (
+                <TableRow
+                  key={account.id}
+                  data-state={selected.has(account.id) && "selected"}
+                >
+                  <TableCell>
+                    <div className="flex items-center justify-center">
+                      <Checkbox
+                        checked={selected.has(account.id)}
+                        onCheckedChange={(checked) =>
+                          toggleOne(account.id, !!checked)
+                        }
+                        aria-label={`Select ${account.nickname}`}
+                      />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{account.nickname}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {account.externalId || "Account ID not provided"}
+                      </span>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Badge
@@ -150,8 +218,14 @@ export default function Page() {
                       <span className="text-muted-foreground">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-right font-medium tabular-nums">
-                    {formatCurrency(netSpend)}
+                  <TableCell
+                    className={cn(
+                      "text-right font-medium tabular-nums",
+                      signedClass(netProfit)
+                    )}
+                  >
+                    {netProfit > 0 ? "+" : ""}
+                    {formatCurrency(netProfit)}
                   </TableCell>
                   <TableCell className="w-10">
                     <DropdownMenu>
@@ -192,6 +266,19 @@ export default function Page() {
               ))}
             </TableBody>
           </Table>
+        </div>
+      )}
+      {accounts.length > 0 && (
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-sm text-muted-foreground">
+            {selected.size} of {accounts.length}{" "}
+            {accounts.length === 1 ? "account" : "accounts"} selected
+          </span>
+          {selected.size > 0 && (
+            <Button variant="destructive" size="sm" onClick={removeSelected}>
+              Remove {selected.size} selected
+            </Button>
+          )}
         </div>
       )}
       {logTarget && (

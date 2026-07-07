@@ -58,7 +58,7 @@ export function ChartSpendStacked() {
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Spend building by category</CardTitle>
+        <CardTitle>Spend by Category</CardTitle>
         <CardDescription>Monthly spend stacked by fee type</CardDescription>
       </CardHeader>
       <CardContent>

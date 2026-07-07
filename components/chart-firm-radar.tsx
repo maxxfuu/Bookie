@@ -84,7 +84,7 @@ export function ChartFirmRadar() {
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Which firm is the better deal?</CardTitle>
+        <CardTitle>Firm Comparison</CardTitle>
         <CardDescription>
           Scored 0–100 per axis relative to the best firm — higher is better.
           Only firms you hold accounts with are plotted.
@@ -93,9 +93,9 @@ export function ChartFirmRadar() {
       <CardContent className="pb-0">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square max-h-[300px]"
+          className="mx-auto aspect-auto h-[320px] w-full"
         >
-          <RadarChart data={chartData}>
+          <RadarChart data={chartData} outerRadius="70%">
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent indicator="line" />}

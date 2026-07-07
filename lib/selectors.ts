@@ -1,4 +1,12 @@
-import type { Account, FeeType, Firm, Phase, Transaction } from "@/lib/types"
+import type {
+  Account,
+  Expense,
+  FeeType,
+  Firm,
+  Phase,
+  TaxCategory,
+  Transaction,
+} from "@/lib/types"
 
 /** Fee types that represent money going out (excludes inflow/lifecycle rows). */
 export const SPEND_FEE_TYPES = [
@@ -49,6 +57,11 @@ export function totalRefundsReceived(data: Transaction[]) {
 
 export function cumulativeNetSpend(data: Transaction[]) {
   return grossFees(data) - totalPayouts(data) - totalRefundsReceived(data)
+}
+
+/** Overall earnings: payouts + refunds minus every fee paid. Positive = profit. */
+export function totalNetProfit(data: Transaction[]) {
+  return -cumulativeNetSpend(data)
 }
 
 export function fundedAccountCount(data: Transaction[]) {
@@ -261,7 +274,8 @@ export type AccountSummary = {
   spend: number
   payouts: number
   refunds: number
-  netSpend: number
+  /** Payouts + refunds minus fees for this account. Positive = profit. */
+  netProfit: number
   transactionCount: number
 }
 
@@ -281,8 +295,131 @@ export function accountSummaries(
       spend,
       payouts,
       refunds,
-      netSpend: spend - payouts - refunds,
+      netProfit: payouts + refunds - spend,
       transactionCount: rows.length,
     }
   })
+}
+
+// --- Tax overlay ------------------------------------------------------------
+
+export const TAX_CATEGORY_LABELS: Record<TaxCategory, string> = {
+  fees_commissions: "Fees & commissions",
+  software_data: "Software & data",
+  education_research: "Education & research",
+  equipment_hardware: "Equipment & hardware",
+  home_office: "Home office",
+  business_meals: "Business meals",
+  professional_services: "Professional services",
+  other: "Other",
+}
+
+const FEE_TYPE_PURPOSE: Partial<Record<FeeType, string>> = {
+  eval: "Evaluation fee",
+  reset: "Reset fee",
+  activation: "Activation fee",
+  addon: "Account add-on",
+  recurring: "Platform / data subscription",
+}
+
+export const yearOf = (isoDate: string) => isoDate.slice(0, 4)
+
+/**
+ * One row on the Tax tab — either a deductible transaction auto-pulled from
+ * Accounts data or a standalone expense. Never re-entered, always derived.
+ */
+export type DeductibleItem = {
+  id: string
+  date: string
+  vendor: string
+  category: TaxCategory
+  amount: number
+  deductiblePct: number
+  /** amount × deductiblePct / 100 */
+  deductibleValue: number
+  receiptUrl: string | null
+  source: "account" | "manual"
+  businessPurpose: string
+}
+
+/** Union of deductible transactions + standalone expenses for a tax year. */
+export function deductibleItems(
+  transactions: Transaction[],
+  expenses: Expense[],
+  year: string
+): DeductibleItem[] {
+  const fromAccounts: DeductibleItem[] = transactions
+    .filter(
+      (t) =>
+        t.deductible &&
+        t.taxCategory !== null &&
+        t.amountPaid > 0 &&
+        yearOf(t.date) === year
+    )
+    .map((t) => ({
+      id: t.id,
+      date: t.date,
+      vendor: t.firm,
+      category: t.taxCategory as TaxCategory,
+      amount: t.amountPaid,
+      deductiblePct: 100,
+      deductibleValue: t.amountPaid,
+      receiptUrl: null,
+      source: "account" as const,
+      businessPurpose: FEE_TYPE_PURPOSE[t.feeType] ?? "Trading business fee",
+    }))
+  const standalone: DeductibleItem[] = expenses
+    .filter((e) => yearOf(e.date) === year)
+    .map((e) => ({
+      id: e.id,
+      date: e.date,
+      vendor: e.vendor,
+      category: e.taxCategory,
+      amount: e.amount,
+      deductiblePct: e.deductiblePct,
+      deductibleValue: (e.amount * e.deductiblePct) / 100,
+      receiptUrl: e.receiptUrl,
+      source: "manual" as const,
+      businessPurpose: e.businessPurpose,
+    }))
+  return [...fromAccounts, ...standalone].sort((a, b) =>
+    b.date.localeCompare(a.date)
+  )
+}
+
+export function payoutsInYear(transactions: Transaction[], year: string) {
+  return transactions
+    .filter((t) => yearOf(t.date) === year)
+    .reduce((sum, t) => sum + t.payout, 0)
+}
+
+/** Years that have any data, newest first, always including `currentYear`. */
+export function taxYears(
+  transactions: Transaction[],
+  expenses: Expense[],
+  currentYear: string
+): string[] {
+  const years = new Set<string>([currentYear])
+  for (const t of transactions) years.add(yearOf(t.date))
+  for (const e of expenses) years.add(yearOf(e.date))
+  return [...years].sort((a, b) => b.localeCompare(a))
+}
+
+export type CategoryTotal = {
+  category: TaxCategory
+  total: number
+}
+
+/** Deductible dollars grouped the way a Schedule C wants them. */
+export function deductibleByCategory(items: DeductibleItem[]): CategoryTotal[] {
+  const byCategory = new Map<TaxCategory, number>()
+  for (const item of items) {
+    byCategory.set(
+      item.category,
+      (byCategory.get(item.category) ?? 0) + item.deductibleValue
+    )
+  }
+  return [...byCategory.entries()]
+    .map(([category, total]) => ({ category, total }))
+    .sort((a, b) => b.total - a.total)
 }

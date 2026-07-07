@@ -30,6 +30,7 @@ export const accountInputSchema = z
   .object({
     firm: z.enum(FIRM_NAMES),
     nickname: z.string().trim().min(1, "Nickname is required"),
+    externalId: z.coerce.string().trim().default(""),
     accountSize: z.coerce.number().positive("Account size must be positive"),
     programType: z.enum(["one-step", "two-step", "instant"]),
     startDate: z
@@ -62,6 +63,7 @@ export const accountInputSchema = z
     return {
       firm: p.firm,
       nickname: p.nickname,
+      externalId: p.externalId,
       accountSize: p.accountSize,
       programType: p.programType,
       startDate: p.startDate,
